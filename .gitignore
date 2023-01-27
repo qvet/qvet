@@ -1,1 +1,4 @@
+# env stuff
 /.env
+/*.private-key.pem
+
