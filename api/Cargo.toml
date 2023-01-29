@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 tokio = { version = "1", default_features = false, features = ["sync", "signal", "macros", "rt-multi-thread"] }
 serde = { version = "1", default_features = false, features = ["derive"] }
@@ -15,11 +13,8 @@ thiserror = "1.0.37"
 anyhow = "1.0.66"
 hyper = "0.14.23"
 log = "0.4.8"
-serde_urlencoded = "0.7.1"
 serde_json = "1.0.91"
 env_logger = "0.10.0"
-clap = { version = "4.0.27", features = ["derive"] }
+clap = { version = "4.0.27", default_features = false, features = ["std", "derive"] }
 dotenv = "0.15.0"
 hex = "0.4.3"
-octocrab = { version = "0.18.1", default_features = false, features = ["rustls"] }
-jsonwebtoken = "8.2.0"
