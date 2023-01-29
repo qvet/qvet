@@ -10,7 +10,6 @@ use std::sync::Arc;
 pub use oauth2::basic::BasicErrorResponse;
 
 mod error;
-mod handler;
 mod oauth_handler;
 mod state;
 
