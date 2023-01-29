@@ -17,7 +17,8 @@ async fn run(args: Args) -> anyhow::Result<()> {
 
 #[tokio::main]
 async fn main() {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    tracing_subscriber::fmt::init();
+    // env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     log::debug!("Initialised logging");
 
     let args = Args::parse();

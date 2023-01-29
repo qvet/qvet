@@ -8,9 +8,7 @@ pub enum Error {
     Listener(hyper::Error),
 
     #[error("Invalid configuration: {message}")]
-    InvalidConfiguration {
-        message: String,
-    },
+    InvalidConfiguration { message: String },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

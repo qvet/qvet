@@ -18,3 +18,6 @@ env_logger = "0.10.0"
 clap = { version = "4.0.27", default_features = false, features = ["std", "derive"] }
 dotenv = "0.15.0"
 hex = "0.4.3"
+tower-http = { name = "0.3.5", default_features = false, features = ["trace"] }
+tracing-subscriber = "0.3.16"
+tracing = "0.1.37"

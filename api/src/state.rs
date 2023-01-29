@@ -1,5 +1,5 @@
-use oauth2::{ ClientId, ClientSecret, basic::BasicClient, AuthUrl, TokenUrl, RedirectUrl};
-use crate::error::{Result, Error};
+use crate::error::{Error, Result};
+use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
 use std::sync::Arc;
 
 pub struct State {
@@ -17,10 +17,15 @@ impl State {
             Some(TokenUrl::new("https://github.com/login/oauth/access_token".to_string()).unwrap()),
         )
         // Set the URL the user will be redirected to after the authorization process.
-        .set_redirect_uri(RedirectUrl::new("http://localhost:39105/oauth2/callback".to_string()).map_err(|_| Error::InvalidConfiguration { message: "Invalid redirect url".to_string()})?);
+        .set_redirect_uri(
+            RedirectUrl::new("http://localhost:39105/oauth2/callback".to_string()).map_err(
+                |_| Error::InvalidConfiguration {
+                    message: "Invalid redirect url".to_string(),
+                },
+            )?,
+        );
         Ok(Self { oauth2_client })
     }
 }
 
 pub type SharedState = Arc<State>;
-
