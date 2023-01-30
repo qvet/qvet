@@ -44,8 +44,10 @@ For convenience, `qvet` can run bundled in a single binary.
 
 For convenience, this binary is available in a thin docker image wrapper.
 
-FIXME: host this image/release somewhere!
+To build a new release, run `./qvet-standalone/scripts/build.sh`, which will produce an image named `qvet-standalone`.
+
+This can then be invoked as follows:
 
 ```bash
-docker run -d --rm --name ci-qvet --init -e GITHUB_CLIENT_ID -e GITHUB_CLIENT_SECRET -p 39105:39105 tommilligan/qvet-standalone --bind 0.0.0.0:39105
+docker run -d --rm --name ci-qvet --init -e GITHUB_CLIENT_ID -e GITHUB_CLIENT_SECRET -p 39105:39105 qvet-standalone --bind 0.0.0.0:39105
 ```
