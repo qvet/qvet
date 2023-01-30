@@ -1,5 +1,5 @@
-import { useContext, useCallback, useState } from "react";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
 import LoadingButton from "@mui/lab/LoadingButton";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Table from "@mui/material/Table";
@@ -10,14 +10,15 @@ import TableRow from "@mui/material/TableRow";
 import Skeleton from "@mui/material/Skeleton";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CancelIcon from "@mui/icons-material/Cancel";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
-import { Commit, Status, OwnerRepoContext } from "src/octokitHelpers";
+import { Commit, OwnerRepoContext } from "src/octokitHelpers";
 import UserLink from "src/components/UserLink";
 import ShaLink from "src/components/ShaLink";
 import { getCommitStatus } from "src/queries";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useOctokit from "src/hooks/useOctokit";
+import { grey } from "@mui/material/colors";
 
 export default function CommitTable({ commits }: { commits: Array<Commit> }) {
   return (
@@ -133,8 +134,12 @@ function CommitRow({ commit }: { commit: Commit }) {
           <LoadingButton onClick={setDeny} loading={deny.isLoading}>
             <CloseIcon />
           </LoadingButton>
-          <LoadingButton onClick={setClear} loading={clear.isLoading}>
-            <DeleteIcon />
+          <LoadingButton
+            style={{ color: grey[400] }}
+            onClick={setClear}
+            loading={clear.isLoading}
+          >
+            <CancelIcon />
           </LoadingButton>
         </ButtonGroup>
       </TableCell>
