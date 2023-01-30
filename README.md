@@ -1,6 +1,12 @@
-# qvet
+<p align="center">
+  <img src="./img/qvet_icon.png" width="128px" height="128px">
+  
+  <h3 align="center">qvet</h3>
 
-Quickly vet your releases for QA.
+  <p align="center">
+    Quickly vet your releases for QA.
+  </p>
+</p>
 
 ## Overview
 
