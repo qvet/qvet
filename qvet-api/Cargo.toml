@@ -1,5 +1,5 @@
 [package]
-name = "qvet_api"
+name = "qvet-api"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -12,12 +12,10 @@ axum = { version = "0.6.0" }
 thiserror = "1.0.37"
 anyhow = "1.0.66"
 hyper = "0.14.23"
-log = "0.4.8"
 serde_json = "1.0.91"
 env_logger = "0.10.0"
 clap = { version = "4.0.27", default_features = false, features = ["std", "derive"] }
-dotenv = "0.15.0"
 hex = "0.4.3"
-tower-http = { name = "0.3.5", default_features = false, features = ["trace"] }
+tower-http = { version = "0.3.5", default_features = false, features = ["trace"] }
 tracing-subscriber = "0.3.16"
 tracing = "0.1.37"

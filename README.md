@@ -20,7 +20,7 @@ All data is stored in Github, there is no additional persistent store/database r
 - Contents: Read only
   - To read branches, commits and tags
 
-### Events
+### Events (currently not required)
 
 - Create
   - To listen for a new tag (release) being created
@@ -35,3 +35,17 @@ Start the two services in development/hot reload mode. Respectively:
 
 - `web` with `cd web && npm install && npm run dev`
 - `api` with `cd api && cargo watch -x 'run -- --bind 0.0.0.0:3000`
+
+## Standalone deployment
+
+For convenience, `qvet` can run bundled in a single binary.
+
+### Docker
+
+For convenience, this binary is available in a thin docker image wrapper.
+
+FIXME: host this image/release somewhere!
+
+```bash
+docker run -d --rm --name ci-qvet --init -e GITHUB_CLIENT_ID -e GITHUB_CLIENT_SECRET -p 39105:39105 tommilligan/qvet-standalone --bind 0.0.0.0:39105
+```

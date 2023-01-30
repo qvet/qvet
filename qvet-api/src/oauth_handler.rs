@@ -26,6 +26,7 @@ pub struct Oauth2InitiateResponse {
 pub async fn oauth2_initiate(
     Extension(state): Extension<SharedState>,
 ) -> Json<Oauth2InitiateResponse> {
+    tracing::info!("Initiating oauth2 flow");
     // Generate a PKCE challenge.
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -66,6 +67,7 @@ pub async fn oauth2_callback(
     Extension(state): Extension<SharedState>,
     extract::Json(payload): extract::Json<Oauth2CallbackRequest>,
 ) -> Json<Oauth2CallbackResponse> {
+    tracing::info!("Completing oauth2 flow");
     let internal_state: Oauth2FlowState =
         serde_json::from_slice(&hex::decode(payload.internal_state).expect("hex failure"))
             .expect("json failure");

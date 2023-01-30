@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "qvet-api",
+    "qvet-standalone",
+]

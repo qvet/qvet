@@ -2,3 +2,5 @@
 /.env
 /*.private-key.pem
 
+# Rust build
+/target

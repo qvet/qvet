@@ -3,8 +3,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-pub use oauth2::basic::BasicErrorResponse;
-use oauth2::{ClientId, ClientSecret};
+use oauth2::basic::BasicClient;
 use std::sync::Arc;
 use tower_http::{
     trace::{DefaultOnResponse, TraceLayer},
@@ -14,6 +13,7 @@ use tracing::Level;
 
 mod error;
 mod oauth_handler;
+pub mod runtime;
 mod state;
 
 pub use crate::error::Error;
@@ -26,18 +26,12 @@ async fn shutdown_signal() {
     tokio::signal::ctrl_c()
         .await
         .expect("Expect shutdown signal handler");
-    log::info!("Received Ctrl+C");
+    tracing::info!("Received Ctrl+C");
 }
 
-/// Listen at the given address for a single OAuth2 code grant callback.
-pub async fn serve(
-    address: &std::net::SocketAddr,
-    client_id: ClientId,
-    client_secret: ClientSecret,
-) -> Result<()> {
-    let state = Arc::new(State::new(client_id, client_secret)?);
-
-    let app = Router::new()
+pub fn api_app(oauth2_client: BasicClient) -> Router {
+    let state = Arc::new(State { oauth2_client });
+    Router::new()
         .route("/", get(root))
         .route("/health", get(health))
         .route("/oauth2/initiate", get(oauth_handler::oauth2_initiate))
@@ -49,8 +43,12 @@ pub async fn serve(
                     .level(Level::INFO)
                     .latency_unit(LatencyUnit::Micros),
             ),
-        );
+        )
+}
 
+/// Listen at the given address for a single OAuth2 code grant callback.
+pub async fn serve(address: &std::net::SocketAddr, app: Router) -> Result<()> {
+    tracing::info!("Listening on {address:?}");
     axum::Server::bind(address)
         .serve(app.into_make_service())
         .with_graceful_shutdown(shutdown_signal())
@@ -60,10 +58,10 @@ pub async fn serve(
     Ok(())
 }
 
-pub async fn root() -> &'static str {
+async fn root() -> &'static str {
     "qvet"
 }
 
-pub async fn health() -> &'static str {
+async fn health() -> &'static str {
     "ok"
 }
