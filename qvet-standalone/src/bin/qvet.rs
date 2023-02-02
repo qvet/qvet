@@ -1,11 +1,10 @@
 use qvet_api::runtime;
 use qvet_api::serve;
-use qvet_api::api_app;
-use qvet_standalone::wrap_api;
+use qvet_standalone::wrapped_api;
+
 
 async fn run(args: runtime::Args) -> anyhow::Result<()> {
-    let app = api_app(runtime::github_oauth2_client()?);
-    let app = wrap_api(app);
+    let app = wrapped_api()?;
     serve(&args.bind, app).await?;
     Ok(())
 }

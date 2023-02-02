@@ -2,5 +2,6 @@
 
 members = [
     "qvet-api",
+    "qvet-shuttle",
     "qvet-standalone",
 ]

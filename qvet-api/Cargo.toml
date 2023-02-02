@@ -2,7 +2,13 @@
 name = "qvet-api"
 version = "0.1.0"
 edition = "2021"
-publish = false
+
+authors = ["Tom Milligan <code@tommilligan.net>"]
+description = "Backend api implementation for qvet."
+repository = "https://github.com/tommilligan/qvet"
+
+license = "MIT"
+keywords = ["qvet", "github", "app", "ci", "qa"]
 
 [dependencies]
 tokio = { version = "1", default_features = false, features = ["sync", "signal", "macros", "rt-multi-thread"] }

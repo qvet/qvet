@@ -3,8 +3,15 @@ name = "qvet-standalone"
 version = "0.1.0"
 edition = "2021"
 
+authors = ["Tom Milligan <code@tommilligan.net>"]
+description = "Single binary artefact for qvet."
+repository = "https://github.com/tommilligan/qvet"
+
+license = "MIT"
+keywords = ["qvet", "github", "app", "ci", "qa"]
+
 [dependencies]
-qvet-api = { path = "../qvet-api" }
+qvet-api = { version = "0.1.0", path = "../qvet-api" }
 tokio = { version = "1", default_features = false, features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.66"
 axum = { version = "0.6.0" }

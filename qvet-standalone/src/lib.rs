@@ -1,3 +1,5 @@
+use qvet_api::runtime;
+use qvet_api::api_app;
 use axum::Router;
 use http::StatusCode;
 use axum::routing::get;
@@ -7,6 +9,11 @@ use axum::response::{Response, IntoResponse};
 use include_dir::{include_dir, Dir, File};
 use http::header;
 use http::HeaderValue;
+
+pub fn wrapped_api() -> anyhow::Result<Router> {
+    let app = api_app(runtime::github_oauth2_client()?);
+    Ok(wrap_api(app))
+}
 
 pub fn wrap_api(api: Router) -> Router {
     let app = Router::new()
