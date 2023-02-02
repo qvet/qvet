@@ -10,6 +10,8 @@ repository = "https://github.com/tommilligan/qvet"
 license = "MIT"
 keywords = ["qvet", "github", "app", "ci", "qa"]
 
+[lib]
+
 [dependencies]
 tokio = { version = "1", default_features = false, features = ["sync", "signal", "macros", "rt-multi-thread"] }
 serde = { version = "1", default_features = false, features = ["derive"] }
