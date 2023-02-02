@@ -18,6 +18,11 @@ pub struct Oauth2FlowState {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct Oauth2InitiateRequest {
+    redirect_origin: oauth2::url::Url,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Oauth2InitiateResponse {
     redirect_url: oauth2::url::Url,
     internal_state: String,
@@ -25,8 +30,17 @@ pub struct Oauth2InitiateResponse {
 
 pub async fn oauth2_initiate(
     Extension(state): Extension<SharedState>,
+    extract::Json(payload): extract::Json<Oauth2InitiateRequest>,
 ) -> Json<Oauth2InitiateResponse> {
     tracing::info!("Initiating oauth2 flow");
+    // Construct the redirect location based on the request
+    let mut redirect_url = payload.redirect_origin;
+    redirect_url
+        .path_segments_mut()
+        .expect("valid url in redirect origin")
+        .push("oauth2")
+        .push("callback");
+
     // Generate a PKCE challenge.
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -34,6 +48,9 @@ pub async fn oauth2_initiate(
     // Generate the full authorization URL.
     let (authorize_url, csrf_token) = client
         .authorize_url(CsrfToken::new_random)
+        .set_redirect_uri(std::borrow::Cow::Owned(oauth2::RedirectUrl::from_url(
+            redirect_url,
+        )))
         // Set the PKCE code challenge.
         .set_pkce_challenge(pkce_challenge)
         .url();

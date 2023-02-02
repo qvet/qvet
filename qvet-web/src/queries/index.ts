@@ -45,7 +45,7 @@ export async function setCommitStatus(
     sha,
     context: STATUS_CONTEXT,
     state,
-    target_url: "http://localhost:39105/",
+    target_url: window.location.origin,
     description: `${stateDescriptionStem(state)} by ${login}`,
   });
   return data;

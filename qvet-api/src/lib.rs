@@ -36,7 +36,7 @@ pub fn api_app(oauth2_client: BasicClient) -> Router {
     Router::new()
         .route("/", get(root))
         .route("/health", get(health))
-        .route("/oauth2/initiate", get(oauth_handler::oauth2_initiate))
+        .route("/oauth2/initiate", post(oauth_handler::oauth2_initiate))
         .route("/oauth2/callback", post(oauth_handler::oauth2_callback))
         .layer(Extension(state))
         .layer(
