@@ -1,9 +1,11 @@
+use qvet_api::api_app;
+use qvet_api::github_oauth2_client;
 use qvet_api::runtime;
 use qvet_api::serve;
-use qvet_api::api_app;
 
 async fn run(args: runtime::Args) -> anyhow::Result<()> {
-    let app = api_app(runtime::github_oauth2_client()?);
+    let (client_id, client_secret) = runtime::github_credentials_from_env()?;
+    let app = api_app(github_oauth2_client(client_id, client_secret)?);
     serve(&args.bind, app).await?;
     Ok(())
 }

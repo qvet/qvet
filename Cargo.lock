@@ -1025,29 +1025,7 @@ dependencies = [
 
 [[package]]
 name = "qvet-api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "clap",
- "env_logger",
- "hex",
- "hyper",
- "oauth2",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "qvet-api"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e944e1642250d301ce3bf6141369ab4544ff434727cbdc18745acfb12bb3a895"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -1069,38 +1047,24 @@ dependencies = [
 name = "qvet-shuttle"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "axum",
- "qvet-standalone 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "qvet-standalone",
+ "shuttle-secrets",
  "shuttle-service",
  "sync_wrapper",
 ]
 
 [[package]]
 name = "qvet-standalone"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "axum",
  "http",
  "include_dir",
  "mime_guess",
- "qvet-api 0.1.0",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "qvet-standalone"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59c41b1e737f5dc48bedbbefac417a326448e4a929d3464a85f46f79abeb7bc6"
-dependencies = [
- "anyhow",
- "axum",
- "http",
- "include_dir",
- "mime_guess",
- "qvet-api 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "qvet-api",
  "tokio",
  "tracing",
 ]
@@ -1406,6 +1370,17 @@ dependencies = [
  "strum",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "shuttle-secrets"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72fd463f83ca83a5b6b1aaa101aeecd91837e2537fc7b60c3b95cc9c0275acea"
+dependencies = [
+ "async-trait",
+ "shuttle-service",
+ "tokio",
 ]
 
 [[package]]

@@ -12,12 +12,14 @@ use tower_http::{
 use tracing::Level;
 
 mod error;
+mod github;
 mod oauth_handler;
 pub mod runtime;
 mod state;
 
 pub use crate::error::Error;
 use crate::error::Result;
+pub use crate::github::github_oauth2_client;
 use crate::state::State;
 
 /// Tokio signal handler that will wait for a user to press CTRL+C.
@@ -36,7 +38,7 @@ pub fn api_app(oauth2_client: BasicClient) -> Router {
         .route("/health", get(health))
         .route("/oauth2/initiate", get(oauth_handler::oauth2_initiate))
         .route("/oauth2/callback", post(oauth_handler::oauth2_callback))
-        .layer(Extension(state.clone()))
+        .layer(Extension(state))
         .layer(
             TraceLayer::new_for_http().on_response(
                 DefaultOnResponse::new()
