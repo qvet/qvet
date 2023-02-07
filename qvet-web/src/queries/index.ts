@@ -46,7 +46,7 @@ export async function setCommitStatus(
     context: STATUS_CONTEXT,
     state,
     target_url: window.location.origin,
-    description: `${stateDescriptionStem(state)} by ${login}`,
+    description: `Manual QA: ${stateDescriptionStem(state)} by ${login}`,
   });
   return data;
 }
