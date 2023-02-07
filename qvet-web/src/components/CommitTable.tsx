@@ -82,6 +82,9 @@ function DisplayStateSkeleton({ ...rest }) {
   );
 }
 
+// Five minutes
+const COMMIT_STATUS_POLL_INTERVAL = 5 * 60 * 1000;
+
 function CommitRow({ commit }: { commit: Commit }) {
   const octokit = useOctokit();
   const ownerRepo = useContext(OwnerRepoContext);
@@ -90,7 +93,7 @@ function CommitRow({ commit }: { commit: Commit }) {
   const status = useQuery({
     queryKey: ["getCommitStatus", { ownerRepo, sha }],
     queryFn: () => getCommitStatus(octokit, ownerRepo, sha),
-    refetchInterval: 60_000,
+    refetchInterval: COMMIT_STATUS_POLL_INTERVAL,
   });
 
   const [approve, setApprove] = useSetCommitState(status, sha, "success");

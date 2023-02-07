@@ -5,6 +5,7 @@ import { Octokit } from "octokit";
 import CommitTable from "src/components/CommitTable";
 import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
+import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
 import useLogin from "src/hooks/useLogin";
 import Stack from "@mui/material/Stack";
@@ -24,6 +25,7 @@ export function Home() {
   return (
     <Box style={{ width: "100%", padding: "8px" }}>
       <Stack spacing={2} alignItems="center">
+        <VersionUpdate />
         <Typography variant="h2">qvet</Typography>
         <Box>
           <LoginButton loggedIn={!!accessToken} />
@@ -93,6 +95,9 @@ async function getCommitComparison(
   return comparison.data;
 }
 
+// Five minutes
+const GIT_REF_POLL_INTERVAL_MS = 5 * 60 * 1000;
+
 export function Overview() {
   const octokit = useOctokit();
   const login = useLogin();
@@ -103,12 +108,12 @@ export function Overview() {
   const masterSha = useQuery({
     queryKey: ["getMasterSha", { ownerRepo }],
     queryFn: () => getMasterSha(octokit, ownerRepo),
-    refetchInterval: 60_000,
+    refetchInterval: GIT_REF_POLL_INTERVAL_MS,
   });
   const prodTag = useQuery({
     queryKey: ["getProdTag", { ownerRepo }],
     queryFn: () => getProdTag(octokit, ownerRepo),
-    refetchInterval: 60_000,
+    refetchInterval: GIT_REF_POLL_INTERVAL_MS,
   });
 
   return login.isLoading ? (
