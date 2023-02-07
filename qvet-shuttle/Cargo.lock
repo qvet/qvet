@@ -1053,7 +1053,7 @@ dependencies = [
 
 [[package]]
 name = "qvet-shuttle"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "axum",
@@ -1065,9 +1065,9 @@ dependencies = [
 
 [[package]]
 name = "qvet-standalone"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab2625d3021a45c736996682e992c0a9a5d14712fe02bc1afdfcf4c855511b26"
+checksum = "8aaf89e5c4ca3fb31cf2babed83891df77adb5b35a4a110b8092a7923215c3bd"
 dependencies = [
  "anyhow",
  "axum",
