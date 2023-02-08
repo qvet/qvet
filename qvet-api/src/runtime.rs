@@ -3,7 +3,7 @@ use clap::Parser;
 use oauth2::basic::BasicClient;
 
 pub fn init_logging() {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().with_ansi(false).init();
     tracing::debug!("Initialised logging");
 }
 

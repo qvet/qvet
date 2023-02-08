@@ -16,4 +16,3 @@ pub fn wrap_api(api: Router) -> Router {
         .route("/*path", get(static_file_handler::static_path))
         .route("/", get(static_file_handler::static_index))
 }
-
