@@ -2,7 +2,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import ky from "ky";
 
 // One hour
-const VERSION_POLL_MS = 3_600_000;
+const VERSION_POLL_INTERVAL_MS = 3_600_000;
 
 /**
  * Return the pair of (cached-local, server) versions.
@@ -15,12 +15,12 @@ export default function useVersions(): [
     useQuery({
       queryKey: ["getVersion"],
       queryFn: () => getVersion(),
-      refetchInterval: VERSION_POLL_MS,
+      refetchInterval: VERSION_POLL_INTERVAL_MS,
     }),
     useQuery({
       queryKey: ["getVersionUncached"],
       queryFn: () => getVersionUncached(),
-      refetchInterval: VERSION_POLL_MS,
+      refetchInterval: VERSION_POLL_INTERVAL_MS,
     }),
   ];
 }

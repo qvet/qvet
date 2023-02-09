@@ -18,6 +18,7 @@ import ShaLink from "src/components/ShaLink";
 import { getCommitStatus } from "src/queries";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useOctokit from "src/hooks/useOctokit";
+import { COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S } from "src/queries";
 import { grey } from "@mui/material/colors";
 
 export default function CommitTable({ commits }: { commits: Array<Commit> }) {
@@ -82,8 +83,11 @@ function DisplayStateSkeleton({ ...rest }) {
   );
 }
 
-// Five minutes
-const COMMIT_STATUS_POLL_INTERVAL = 5 * 60 * 1000;
+// Two minutes
+const COMMIT_STATUS_POLL_INTERVAL_MS = 2 * 60 * 1000;
+// So let our data only refetch after a bit more time than that
+const COMMIT_STATUS_STALE_TIME_MS =
+  (COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S + 10) * 1000;
 
 function CommitRow({ commit }: { commit: Commit }) {
   const octokit = useOctokit();
@@ -93,7 +97,8 @@ function CommitRow({ commit }: { commit: Commit }) {
   const status = useQuery({
     queryKey: ["getCommitStatus", { ownerRepo, sha }],
     queryFn: () => getCommitStatus(octokit, ownerRepo, sha),
-    refetchInterval: COMMIT_STATUS_POLL_INTERVAL,
+    refetchInterval: COMMIT_STATUS_POLL_INTERVAL_MS,
+    staleTime: COMMIT_STATUS_STALE_TIME_MS,
   });
 
   const [approve, setApprove] = useSetCommitState(status, sha, "success");
