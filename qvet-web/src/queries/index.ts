@@ -3,6 +3,7 @@ const STATUS_CONTEXT = "qvet/qa";
 import { Octokit } from "octokit";
 import { ResponseHeaders } from "@octokit/types";
 import { OwnerRepo, Status } from "src/octokitHelpers";
+import { UpdateState, stateDisplay } from "src/utils/status";
 
 // Github requests commit statuses be cached for 60s in browser
 // A current value can be found in the `cache-control` header of the github response
@@ -45,33 +46,24 @@ export async function getCommitStatus(
   return null;
 }
 
-export type WriteableState = "success" | "failure" | "pending";
-
-function stateDescriptionStem(state: WriteableState): string {
-  switch (state) {
-    case "success":
-      return "Approved";
-    case "failure":
-      return "Rejected";
-    case "pending":
-      return "Cleared";
-  }
+function updateDescription(update: UpdateState): string {
+  return `${stateDisplay(update.state)} by ${update.user.login}`;
 }
 
 export async function setCommitStatus(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
   sha: string,
-  login: string,
-  state: WriteableState
+  update: UpdateState
 ): Promise<Status> {
+  const description = updateDescription(update);
   const { data } = await octokit.rest.repos.createCommitStatus({
     ...ownerRepo,
     sha,
     context: STATUS_CONTEXT,
-    state,
+    state: update.state,
     target_url: window.location.origin,
-    description: `Manual QA: ${stateDescriptionStem(state)} by ${login}`,
+    description,
   });
   return data;
 }

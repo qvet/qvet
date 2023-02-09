@@ -10,7 +10,7 @@ import TableRow from "@mui/material/TableRow";
 import Skeleton from "@mui/material/Skeleton";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
-import CancelIcon from "@mui/icons-material/Cancel";
+import ReplayIcon from "@mui/icons-material/Replay";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import { Commit, OwnerRepoContext } from "src/octokitHelpers";
 import UserLink from "src/components/UserLink";
@@ -18,6 +18,8 @@ import ShaLink from "src/components/ShaLink";
 import { getCommitStatus } from "src/queries";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useOctokit from "src/hooks/useOctokit";
+import { stateDisplay } from "src/utils/status";
+import { Status } from "src/octokitHelpers";
 import { COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S } from "src/queries";
 import { grey } from "@mui/material/colors";
 
@@ -29,7 +31,7 @@ export default function CommitTable({ commits }: { commits: Array<Commit> }) {
           <TableCell>Message</TableCell>
           <TableCell>Author</TableCell>
           <TableCell>Hash</TableCell>
-          <TableCell>Status</TableCell>
+          <TableCell>Manual QA</TableCell>
           <TableCell>Actions</TableCell>
         </TableRow>
       </TableHead>
@@ -42,31 +44,54 @@ export default function CommitTable({ commits }: { commits: Array<Commit> }) {
   );
 }
 
-function DisplayState({ state }: { state: string }) {
-  // Defaults for unknown states
-  let icon = <CircleOutlinedIcon fontSize="small" />;
-  let text = state;
+function nullableStatusDisplay(status: Status | null): {
+  text: string;
+  icon: React.ReactNode;
+} {
+  const pending = {
+    text: "Pending",
+    icon: <CircleOutlinedIcon fontSize="small" color="warning" />,
+  };
 
-  switch (state) {
-    case "success":
-      icon = <DoneIcon fontSize="small" color="success" />;
-      text = "Approved";
-      break;
-    case "error":
-    case "failure":
-      icon = <CloseIcon fontSize="small" color="error" />;
-      text = "Rejected";
-      break;
-    case "pending":
-      icon = <CircleOutlinedIcon fontSize="small" color="warning" />;
-      text = "Pending";
-      break;
+  if (!status) {
+    return pending;
+  } else {
+    const state = status.state;
+    switch (state) {
+      case "success":
+        return {
+          text: stateDisplay(state),
+          icon: <DoneIcon fontSize="small" color="success" />,
+        };
+      case "error":
+      case "failure":
+        return {
+          text: stateDisplay(state),
+          icon: <CloseIcon fontSize="small" color="error" />,
+        };
+      case "pending":
+        return pending;
+      default:
+        return {
+          text: state,
+          icon: <CircleOutlinedIcon fontSize="small" />,
+        };
+    }
   }
+}
+
+function DisplayState({ status }: { status: Status | null }) {
+  const { text, icon } = nullableStatusDisplay(status);
 
   return (
     <div style={{ display: "flex", gap: "8px" }}>
       {icon}
-      {text}
+      <span>
+        {text}
+        {status && status.creator && status.state !== "pending" ? (
+          <> by {<UserLink inline user={status.creator} />}</>
+        ) : null}
+      </span>
     </div>
   );
 }
@@ -125,29 +150,38 @@ function CommitRow({ commit }: { commit: Commit }) {
       <TableCell>
         <ShaLink commit={commit} />
       </TableCell>
-      <TableCell style={{ minWidth: "150px" }}>
+      <TableCell style={{ minWidth: "220px" }}>
         {status.isError ? (
           <DisplayStateSkeleton animation={false} />
         ) : status.isLoading ? (
           <DisplayStateSkeleton />
         ) : (
-          <DisplayState state={status.data?.state || "pending"} />
+          <DisplayState status={status.data} />
         )}
       </TableCell>
       <TableCell>
         <ButtonGroup>
-          <LoadingButton onClick={setApprove} loading={approve.isLoading}>
+          <LoadingButton
+            title="Mark QA as Completed"
+            onClick={setApprove}
+            loading={approve.isLoading}
+          >
             <DoneIcon />
           </LoadingButton>
-          <LoadingButton onClick={setDeny} loading={deny.isLoading}>
+          <LoadingButton
+            title="Mark QA as Rejected"
+            onClick={setDeny}
+            loading={deny.isLoading}
+          >
             <CloseIcon />
           </LoadingButton>
           <LoadingButton
+            title="Reset QA Status"
             style={{ color: grey[400] }}
             onClick={setClear}
             loading={clear.isLoading}
           >
-            <CancelIcon />
+            <ReplayIcon />
           </LoadingButton>
         </ButtonGroup>
       </TableCell>

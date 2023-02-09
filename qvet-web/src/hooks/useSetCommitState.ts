@@ -1,4 +1,5 @@
-import { WriteableState, setCommitStatus } from "src/queries";
+import { setCommitStatus } from "src/queries";
+import { WriteableState } from "src/utils/status";
 import {
   UseQueryResult,
   useMutation,
@@ -25,7 +26,10 @@ export default function useSetCommitState(
       if (!login.data) {
         return;
       }
-      return setCommitStatus(octokit, ownerRepo, sha, login.data.login, state);
+      return setCommitStatus(octokit, ownerRepo, sha, {
+        user: login.data,
+        state,
+      });
     },
     {
       // Refetch the new commit status after this call finishes
