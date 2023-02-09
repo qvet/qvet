@@ -9,11 +9,20 @@ export default function VersionUpdate() {
   let [localVersion, serverVersion] = useVersions();
 
   const doUpdate = useCallback(async () => {
-    ky.get("version", {
+    // Bust cache on the app entrypoint we know about
+    await ky.get("index.html", {
       headers: {
         "Cache-Control": "no-cache",
       },
-    }).text();
+    });
+    // Bust version cache to mark us as updated
+    await ky.get("version", {
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
+
+    // Reload everything (will now use latest cached app entrypoint)
     window.location.reload();
   }, []);
 
