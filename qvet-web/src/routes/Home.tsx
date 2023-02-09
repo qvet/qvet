@@ -185,6 +185,7 @@ export function CommitSummary({ comparison }: CommitSummaryProps) {
     // FIXME un-hardcode
     return !(commit.author && commit.author.login === "rebors[bot]");
   });
+  developerCommits.reverse();
   const hiddenCommitCount = comparison.commits.length - developerCommits.length;
 
   return (
