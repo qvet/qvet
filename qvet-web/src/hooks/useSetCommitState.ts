@@ -8,8 +8,7 @@ import {
 } from "@tanstack/react-query";
 import useOctokit from "src/hooks/useOctokit";
 import useLogin from "src/hooks/useLogin";
-import { useContext } from "react";
-import { OwnerRepoContext } from "src/octokitHelpers";
+import useOwnerRepo from "src/hooks/useOwnerRepo";
 
 export default function useSetCommitState(
   status: UseQueryResult<unknown>,
@@ -18,7 +17,7 @@ export default function useSetCommitState(
 ): [UseMutationResult<unknown, unknown, void>, () => void] {
   const octokit = useOctokit();
   const login = useLogin();
-  const ownerRepo = useContext(OwnerRepoContext);
+  const ownerRepo = useOwnerRepo();
 
   const queryClient = useQueryClient();
   const setCommitState = useMutation(

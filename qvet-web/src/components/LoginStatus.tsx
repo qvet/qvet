@@ -7,7 +7,7 @@ import useLogin from "src/hooks/useLogin";
 export default function LoginStatus() {
   let login = useLogin();
   return login.isLoading ? (
-    <Skeleton variant="rounded" width={100} height={40} />
+    <Skeleton variant="rounded" width={350} height={40} />
   ) : login.isError ? (
     <Alert severity="error">"error loading login"</Alert>
   ) : (

@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
@@ -7,14 +6,12 @@ import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
-import useLogin from "src/hooks/useLogin";
+import useMasterSha from "src/hooks/useMasterSha";
+import useOwnerRepo from "src/hooks/useOwnerRepo";
+import useProdTag from "src/hooks/useProdTag";
 import useAccessToken from "src/hooks/useAccessToken";
 import Stack from "@mui/material/Stack";
-import {
-  OwnerRepo,
-  OwnerRepoContext,
-  CommitComparison,
-} from "src/octokitHelpers";
+import { OwnerRepo, CommitComparison } from "src/octokitHelpers";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -32,7 +29,10 @@ export function Home() {
         <VersionUpdate />
         <Typography variant="h2">qvet</Typography>
         {loggedIn ? (
-          <Overview />
+          <>
+            <LoginStatus />
+            <Comparison />
+          </>
         ) : (
           <Box>
             <LoginButton loggedIn={loggedIn} />
@@ -41,48 +41,6 @@ export function Home() {
       </Stack>
     </Box>
   );
-}
-
-interface Tag {
-  name: string;
-  commit: {
-    sha: string;
-  };
-}
-
-async function getProdTag(
-  octokit: Octokit,
-  ownerRepo: OwnerRepo
-): Promise<Tag | null> {
-  const tagPages = octokit.paginate.iterator(octokit.rest.repos.listTags, {
-    ...ownerRepo,
-    per_page: 100,
-  });
-
-  // FIXME un-hardcode
-  for await (const { data: tags } of tagPages) {
-    for (const tag of tags) {
-      if (
-        tag.name.startsWith("prod-") &&
-        !tag.name.startsWith("prod-revert-")
-      ) {
-        return tag;
-      }
-    }
-  }
-
-  return null;
-}
-
-async function getMasterSha(
-  octokit: Octokit,
-  ownerRepo: OwnerRepo
-): Promise<string> {
-  const branch = await octokit.rest.repos.getBranch({
-    ...ownerRepo,
-    branch: "master",
-  });
-  return branch.data.commit.sha;
 }
 
 async function getCommitComparison(
@@ -98,70 +56,39 @@ async function getCommitComparison(
   return comparison.data;
 }
 
-// Five minutes
-const GIT_REF_POLL_INTERVAL_MS = 5 * 60 * 1000;
-
-export function Overview() {
+export function Comparison() {
   const octokit = useOctokit();
-  const login = useLogin();
+  const ownerRepo = useOwnerRepo();
+  const masterSha = useMasterSha();
+  const prodTag = useProdTag();
 
-  // FIXME un-hardcode
-  const ownerRepo = { owner: "reinfer", repo: "platform" };
-
-  const masterSha = useQuery({
-    queryKey: ["getMasterSha", { ownerRepo }],
-    queryFn: () => getMasterSha(octokit!, ownerRepo),
-    refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit,
-  });
-  const prodTag = useQuery({
-    queryKey: ["getProdTag", { ownerRepo }],
-    queryFn: () => getProdTag(octokit!, ownerRepo),
-    refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit,
-  });
-
-  return login.isLoading ? (
-    <Skeleton variant="rounded" width={240} height={40} />
-  ) : login.isError ? (
-    <Alert severity="error">{`${login.error}`}</Alert>
-  ) : (
-    <OwnerRepoContext.Provider value={ownerRepo}>
-      <LoginStatus />
-      {masterSha.isError || prodTag.isError ? (
-        "Error loading comparison points"
-      ) : masterSha.isLoading || prodTag.isLoading ? (
-        <Skeleton variant="rounded" width={240} height={40} />
-      ) : prodTag.data === null ? (
-        "No previous prod release"
-      ) : (
-        <Comparison masterSha={masterSha.data} prodTag={prodTag.data} />
-      )}
-    </OwnerRepoContext.Provider>
-  );
-}
-
-interface ComparisonProps {
-  masterSha: string;
-  prodTag: Tag;
-}
-
-export function Comparison({ masterSha, prodTag }: ComparisonProps) {
-  const octokit = useOctokit();
-  const ownerRepo = useContext(OwnerRepoContext);
-  const prodSha = prodTag.commit.sha;
   const comparison = useQuery({
-    queryKey: ["getComparison", { ownerRepo, masterSha, prodSha }],
-    queryFn: () => getCommitComparison(octokit!, ownerRepo, masterSha, prodSha),
-    enabled: !!octokit,
+    queryKey: [
+      "getComparison",
+      {
+        ownerRepo,
+        masterSha: masterSha.data,
+        prodSha: prodTag.data?.commit.sha,
+      },
+    ],
+    queryFn: () =>
+      getCommitComparison(
+        octokit!,
+        ownerRepo,
+        masterSha.data!,
+        prodTag.data!.commit.sha
+      ),
+    enabled: !!octokit && !!masterSha.data && !!prodTag.data,
   });
 
   return (
     <>
       <Paper elevation={3}>
         <Box padding={2}>
-          {comparison.isError ? (
-            "error loading comparison"
+          {prodTag.data === null ? (
+            <Alert severity="info">No previous prod release</Alert>
+          ) : comparison.isError ? (
+            <Alert severity="error">Error loading comparison</Alert>
           ) : comparison.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (

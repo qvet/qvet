@@ -6,12 +6,6 @@ export interface OwnerRepo {
   repo: string;
 }
 
-// Default value should never be used.
-export const OwnerRepoContext = createContext<OwnerRepo>({
-  owner: "octokit",
-  repo: "app.js",
-});
-
 export type Commit = components["schemas"]["commit"];
 export type CommitComparison = components["schemas"]["commit-comparison"];
 export type Status = components["schemas"]["status"];
