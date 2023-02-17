@@ -1,15 +1,17 @@
+use crate::state::SharedState;
 use axum::{
-    extract::{self, Extension},
-    response::Json,
+    extract::{self, State},
+    response::{IntoResponse, Json, Response},
 };
+use axum_extra::extract::cookie::{Cookie, PrivateCookieJar, SameSite};
+use http::StatusCode;
 pub use oauth2::basic::BasicErrorResponse;
 use oauth2::reqwest::async_http_client;
 use oauth2::{
-    AccessToken, AuthorizationCode, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, TokenResponse,
+    basic::BasicTokenType, AccessToken, AuthorizationCode, CsrfToken, EmptyExtraTokenFields,
+    PkceCodeChallenge, PkceCodeVerifier, RefreshToken, StandardTokenResponse, TokenResponse,
 };
 use serde::{Deserialize, Serialize};
-
-use crate::state::SharedState;
 
 #[derive(Serialize, Deserialize)]
 pub struct Oauth2FlowState {
@@ -29,7 +31,7 @@ pub struct Oauth2InitiateResponse {
 }
 
 pub async fn oauth2_initiate(
-    Extension(state): Extension<SharedState>,
+    State(state): State<SharedState>,
     extract::Json(payload): extract::Json<Oauth2InitiateRequest>,
 ) -> Json<Oauth2InitiateResponse> {
     tracing::info!("Initiating oauth2 flow");
@@ -81,9 +83,10 @@ pub struct Oauth2CallbackResponse {
 }
 
 pub async fn oauth2_callback(
-    Extension(state): Extension<SharedState>,
+    State(state): State<SharedState>,
+    jar: PrivateCookieJar,
     extract::Json(payload): extract::Json<Oauth2CallbackRequest>,
-) -> Json<Oauth2CallbackResponse> {
+) -> Response {
     tracing::info!("Completing oauth2 flow");
     let internal_state: Oauth2FlowState =
         serde_json::from_slice(&hex::decode(payload.internal_state).expect("hex failure"))
@@ -97,7 +100,64 @@ pub async fn oauth2_callback(
         .await
         .expect("request failure");
 
-    Json(Oauth2CallbackResponse {
-        access_token: token_result.access_token().to_owned(),
-    })
+    let jar = set_refresh_token_cookie(jar, token_result, "exchange_code");
+    (
+        StatusCode::OK,
+        jar,
+        Json(Oauth2CallbackResponse {
+            access_token: token_result.access_token().to_owned(),
+        }),
+    )
+        .into_response()
+}
+
+const COOKIE_KEY_NAME_REFRESH_TOKEN: &str = "qvet-github-refresh-token";
+
+pub async fn access_token(State(state): State<SharedState>, jar: PrivateCookieJar) -> Response {
+    tracing::info!("New access token requested");
+    let refresh_token = jar.get(COOKIE_KEY_NAME_REFRESH_TOKEN);
+    let Some(refresh_token) = refresh_token else {
+        return StatusCode::UNAUTHORIZED.into_response()
+    };
+
+    let refresh_token = RefreshToken::new(refresh_token.value().to_owned());
+
+    let token_result = &state
+        .oauth2_client
+        .exchange_refresh_token(&refresh_token)
+        .request_async(async_http_client)
+        .await
+        .expect("request failure");
+
+    let jar = set_refresh_token_cookie(jar, token_result, "exchange_refresh_token");
+    (
+        StatusCode::OK,
+        jar,
+        Json(Oauth2CallbackResponse {
+            access_token: token_result.access_token().to_owned(),
+        }),
+    )
+        .into_response()
+}
+
+pub fn set_refresh_token_cookie(
+    jar: PrivateCookieJar,
+    token_result: &StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+    operation_id: &str,
+) -> PrivateCookieJar {
+    if let Some(refresh_token) = token_result.refresh_token() {
+        let cookie = Cookie::build(
+            COOKIE_KEY_NAME_REFRESH_TOKEN,
+            refresh_token.secret().to_owned(),
+        )
+        .path("/")
+        .secure(true)
+        .http_only(true)
+        .same_site(SameSite::Strict)
+        .finish();
+        jar.add(cookie)
+    } else {
+        tracing::warn!("No refresh token in {operation_id} response");
+        jar
+    }
 }

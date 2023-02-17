@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import ky from "ky";
 import FullPageLoading from "src/components/FullPageLoading";
@@ -14,14 +14,13 @@ interface Oauth2CallbackResponse {
   access_token: string;
 }
 
-async function apiCallback(body: Oauth2CallbackRequest): Promise<null> {
+async function apiCallback(body: Oauth2CallbackRequest): Promise<string> {
   const response: Oauth2CallbackResponse = await ky
     .post("/api/oauth2/callback", {
       json: body,
     })
     .json();
-  localStorage.setItem("access_token", response.access_token);
-  return null;
+  return response.access_token;
 }
 
 export function Oauth2Callback() {
@@ -34,6 +33,7 @@ export function Oauth2Callback() {
 
   const body: Oauth2CallbackRequest = { code, state, internal_state };
 
+  const queryClient = useQueryClient();
   const accessToken = useQuery({
     queryKey: ["oauth2Callback", body],
     queryFn: () => apiCallback(body),
@@ -41,9 +41,10 @@ export function Oauth2Callback() {
 
   React.useEffect(() => {
     if (accessToken.isSuccess) {
+      queryClient.setQueryData(["getAccessToken"], accessToken.data);
       navigate("/");
     }
-  }, [accessToken]);
+  }, [accessToken, queryClient]);
 
   return <FullPageLoading />;
 }

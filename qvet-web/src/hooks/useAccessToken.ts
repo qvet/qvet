@@ -1,3 +1,25 @@
-export default function useAccessToken(): string | null {
-  return localStorage.getItem("access_token") ?? null;
+import ky from "ky";
+import { useQuery } from "@tanstack/react-query";
+
+// 30 minutes
+const ACCESS_TOKEN_POLL_INTERVAL_MS = 30 * 60 * 1000;
+
+export default function useAccessToken() {
+  return useQuery({
+    queryKey: ["getAccessToken"],
+    queryFn: () => getAccessToken(),
+    refetchInterval: ACCESS_TOKEN_POLL_INTERVAL_MS,
+    staleTime: ACCESS_TOKEN_POLL_INTERVAL_MS,
+  });
+}
+
+interface AccessTokenResponse {
+  access_token: string;
+}
+
+async function getAccessToken(): Promise<string> {
+  const response: AccessTokenResponse = await ky
+    .post("/api/oauth2/access-token")
+    .json();
+  return response.access_token;
 }

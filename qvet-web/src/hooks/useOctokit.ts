@@ -7,17 +7,16 @@ import useAccessToken from "src/hooks/useAccessToken";
  *
  * Will fail if no user is credentialed.
  */
-export default function useOctokit() {
-  const accessToken = useAccessToken();
-  if (accessToken === null) {
-    throw new Error("tried to use octokit without credentials");
-  }
+export default function useOctokit(): Octokit | null {
+  const { data: accessToken } = useAccessToken();
 
   return useMemo(
     () =>
-      new Octokit({
-        auth: accessToken,
-      }),
+      !!accessToken
+        ? new Octokit({
+            auth: accessToken,
+          })
+        : null,
     [accessToken]
   );
 }

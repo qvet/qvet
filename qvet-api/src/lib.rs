@@ -1,8 +1,8 @@
 use axum::{
-    extract::Extension,
     routing::{get, post},
     Router,
 };
+use axum_extra::extract::cookie::Key;
 use oauth2::basic::BasicClient;
 use std::sync::Arc;
 use tower_http::{
@@ -20,7 +20,7 @@ mod state;
 pub use crate::error::Error;
 use crate::error::Result;
 pub use crate::github::github_oauth2_client;
-use crate::state::State;
+use crate::state::{SharedState, State};
 
 /// Tokio signal handler that will wait for a user to press CTRL+C.
 /// We use this in our hyper `Server` method `with_graceful_shutdown`.
@@ -32,13 +32,18 @@ async fn shutdown_signal() {
 }
 
 pub fn api_app(oauth2_client: BasicClient) -> Router {
-    let state = Arc::new(State { oauth2_client });
+    let state = SharedState(Arc::new(State {
+        oauth2_client,
+        // FIXME pass in as a cli param, rather than generating each time
+        cookie_key: Key::generate(),
+    }));
     Router::new()
         .route("/", get(root))
         .route("/health", get(health))
+        .route("/oauth2/access-token", post(oauth_handler::access_token))
         .route("/oauth2/initiate", post(oauth_handler::oauth2_initiate))
         .route("/oauth2/callback", post(oauth_handler::oauth2_callback))
-        .layer(Extension(state))
+        .with_state(state)
         .layer(
             TraceLayer::new_for_http().on_response(
                 DefaultOnResponse::new()

@@ -23,7 +23,7 @@ export default function useSetCommitState(
   const queryClient = useQueryClient();
   const setCommitState = useMutation(
     async () => {
-      if (!login.data) {
+      if (!login.data || !octokit) {
         return;
       }
       return setCommitStatus(octokit, ownerRepo, sha, {

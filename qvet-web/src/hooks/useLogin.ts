@@ -14,8 +14,9 @@ export default function useLogin(): UseQueryResult<User, Error> {
   const octokit = useOctokit();
 
   return useQuery({
-    queryKey: ["getLogin", accessToken],
-    queryFn: () => getLogin(octokit),
+    queryKey: ["getLogin", accessToken.data],
+    queryFn: () => getLogin(octokit!),
+    enabled: !!accessToken.data && !!octokit,
   });
 }
 

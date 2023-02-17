@@ -8,6 +8,7 @@ import LoginButton from "src/components/LoginButton";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
 import useLogin from "src/hooks/useLogin";
+import useAccessToken from "src/hooks/useAccessToken";
 import Stack from "@mui/material/Stack";
 import {
   OwnerRepo,
@@ -21,20 +22,22 @@ import Skeleton from "@mui/material/Skeleton";
 import Typography from "@mui/material/Typography";
 
 export function Home() {
-  const accessToken = localStorage.getItem("access_token") ?? null;
+  // Backcompat - remove existing token storage in browser
+  localStorage.removeItem("access_token");
+  const accessToken = useAccessToken();
+  const loggedIn = !(accessToken.isLoading || accessToken.isError);
   return (
     <Box style={{ width: "100%", padding: "8px" }}>
       <Stack spacing={2} alignItems="center">
         <VersionUpdate />
         <Typography variant="h2">qvet</Typography>
-        <Box>
-          <LoginButton loggedIn={!!accessToken} />
-        </Box>
-        {
-          // This check is to ensure we don't request an octokit for something
-          // before we're logged in and able to do so.
-          accessToken !== null ? <Overview /> : null
-        }
+        {loggedIn ? (
+          <Overview />
+        ) : (
+          <Box>
+            <LoginButton loggedIn={loggedIn} />
+          </Box>
+        )}
       </Stack>
     </Box>
   );
@@ -107,19 +110,21 @@ export function Overview() {
 
   const masterSha = useQuery({
     queryKey: ["getMasterSha", { ownerRepo }],
-    queryFn: () => getMasterSha(octokit, ownerRepo),
+    queryFn: () => getMasterSha(octokit!, ownerRepo),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
+    enabled: !!octokit,
   });
   const prodTag = useQuery({
     queryKey: ["getProdTag", { ownerRepo }],
-    queryFn: () => getProdTag(octokit, ownerRepo),
+    queryFn: () => getProdTag(octokit!, ownerRepo),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
+    enabled: !!octokit,
   });
 
   return login.isLoading ? (
     <Skeleton variant="rounded" width={240} height={40} />
   ) : login.isError ? (
-    <Alert>{`${login.error}`}</Alert>
+    <Alert severity="error">{`${login.error}`}</Alert>
   ) : (
     <OwnerRepoContext.Provider value={ownerRepo}>
       <LoginStatus />
@@ -147,7 +152,8 @@ export function Comparison({ masterSha, prodTag }: ComparisonProps) {
   const prodSha = prodTag.commit.sha;
   const comparison = useQuery({
     queryKey: ["getComparison", { ownerRepo, masterSha, prodSha }],
-    queryFn: () => getCommitComparison(octokit, ownerRepo, masterSha, prodSha),
+    queryFn: () => getCommitComparison(octokit!, ownerRepo, masterSha, prodSha),
+    enabled: !!octokit,
   });
 
   return (
@@ -162,7 +168,7 @@ export function Comparison({ masterSha, prodTag }: ComparisonProps) {
                 <Skeleton
                   key={index}
                   variant="rounded"
-                  width={1024}
+                  width={920}
                   height={60}
                 />
               ))}
