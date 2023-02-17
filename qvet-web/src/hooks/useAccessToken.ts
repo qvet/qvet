@@ -8,6 +8,8 @@ export default function useAccessToken() {
   return useQuery({
     queryKey: ["getAccessToken"],
     queryFn: () => getAccessToken(),
+    retry: 1,
+    retryDelay: 0,
     refetchInterval: ACCESS_TOKEN_POLL_INTERVAL_MS,
     staleTime: ACCESS_TOKEN_POLL_INTERVAL_MS,
   });

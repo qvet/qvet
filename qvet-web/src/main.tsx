@@ -16,6 +16,7 @@ const darkTheme = createTheme({
 });
 
 function App() {
+  removeUnusedLocalStorageItems();
   const router = createBrowserRouter([
     {
       path: "/",
@@ -44,3 +45,8 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+
+function removeUnusedLocalStorageItems() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("oauth2_internal_state");
+}

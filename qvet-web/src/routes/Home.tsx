@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
 import CommitTable from "src/components/CommitTable";
@@ -6,6 +7,7 @@ import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
+import useLoginRedirect from "src/hooks/useLoginRedirect";
 import useMasterSha from "src/hooks/useMasterSha";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useProdTag from "src/hooks/useProdTag";
@@ -17,27 +19,43 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 import Typography from "@mui/material/Typography";
+import { LOCAL_STORAGE_KEYS } from "src/constants";
 
 export function Home() {
-  // Backcompat - remove existing token storage in browser
-  localStorage.removeItem("access_token");
   const accessToken = useAccessToken();
   const loggedIn = !(accessToken.isLoading || accessToken.isError);
+  const loginRedirect = useLoginRedirect();
+  const oauthFlowInFlight = !!localStorage.getItem(
+    LOCAL_STORAGE_KEYS.oauthFlowInternalState
+  );
+
+  useEffect(() => {
+    if (accessToken.isError && !oauthFlowInFlight) {
+      loginRedirect();
+    }
+  }, [accessToken]);
+
   return (
     <Box style={{ width: "100%", padding: "8px" }}>
       <Stack spacing={2} alignItems="center">
         <VersionUpdate />
         <Typography variant="h2">qvet</Typography>
-        {loggedIn ? (
-          <>
-            <LoginStatus />
-            <Comparison />
-          </>
-        ) : (
-          <Box>
-            <LoginButton loggedIn={loggedIn} />
-          </Box>
-        )}
+        {
+          // Only show login button if there's an oauth flow in flight,
+          // i.e. it failed to complete successfully.
+          //
+          // We do this to avoid an infinite loop on error.
+          accessToken.isError && oauthFlowInFlight ? (
+            <Box>
+              <LoginButton loggedIn={false} />
+            </Box>
+          ) : (
+            <>
+              <LoginStatus />
+              <Comparison />
+            </>
+          )
+        }
       </Stack>
     </Box>
   );

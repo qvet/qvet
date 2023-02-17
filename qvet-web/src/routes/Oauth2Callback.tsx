@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import ky from "ky";
 import FullPageLoading from "src/components/FullPageLoading";
+import { LOCAL_STORAGE_KEYS } from "src/constants";
 
 interface Oauth2CallbackRequest {
   code: string;
@@ -29,7 +30,8 @@ export function Oauth2Callback() {
   const query = new URLSearchParams(window.location.search);
   const code = query.get("code") ?? "";
   const state = query.get("state") ?? "";
-  const internal_state = localStorage.getItem("oauth2_internal_state") ?? "";
+  const internal_state =
+    localStorage.getItem(LOCAL_STORAGE_KEYS.oauthFlowInternalState) ?? "";
 
   const body: Oauth2CallbackRequest = { code, state, internal_state };
 
@@ -42,6 +44,7 @@ export function Oauth2Callback() {
   React.useEffect(() => {
     if (accessToken.isSuccess) {
       queryClient.setQueryData(["getAccessToken"], accessToken.data);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.oauthFlowInternalState);
       navigate("/");
     }
   }, [accessToken, queryClient]);
