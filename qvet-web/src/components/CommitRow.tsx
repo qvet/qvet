@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import LoadingButton from "@mui/lab/LoadingButton";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import TableCell from "@mui/material/TableCell";
@@ -10,32 +9,14 @@ import ReplayIcon from "@mui/icons-material/Replay";
 import { Commit } from "src/octokitHelpers";
 import UserLink from "src/components/UserLink";
 import ShaLink from "src/components/ShaLink";
-import { getCommitStatus } from "src/queries";
 import useSetCommitState from "src/hooks/useSetCommitState";
-import useOwnerRepo from "src/hooks/useOwnerRepo";
-import useOctokit from "src/hooks/useOctokit";
-import { COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S } from "src/queries";
 import { grey } from "@mui/material/colors";
 import DisplayState from "src/components/DisplayState";
-
-// Two minutes
-const COMMIT_STATUS_POLL_INTERVAL_MS = 2 * 60 * 1000;
-// So let our data only refetch after a bit more time than that
-const COMMIT_STATUS_STALE_TIME_MS =
-  (COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S + 10) * 1000;
+import useCommitStatus from "src/hooks/useCommitStatus";
 
 export default function CommitRow({ commit }: { commit: Commit }) {
-  const octokit = useOctokit();
-  const ownerRepo = useOwnerRepo();
-
   const sha = commit.sha;
-  const status = useQuery({
-    queryKey: ["getCommitStatus", { ownerRepo, sha }],
-    queryFn: () => getCommitStatus(octokit!, ownerRepo, sha),
-    refetchInterval: COMMIT_STATUS_POLL_INTERVAL_MS,
-    staleTime: COMMIT_STATUS_STALE_TIME_MS,
-    enabled: !!octokit,
-  });
+  const status = useCommitStatus(sha);
 
   const [approve, setApprove] = useSetCommitState(status, sha, "success");
   const [deny, setDeny] = useSetCommitState(status, sha, "failure");

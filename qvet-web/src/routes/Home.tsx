@@ -5,6 +5,7 @@ import { Octokit } from "octokit";
 import CommitTable from "src/components/CommitTable";
 import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
+import DeploymentHeadline from "src/components/DeploymentHeadline";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
 import useLoginRedirect from "src/hooks/useLoginRedirect";
@@ -141,6 +142,7 @@ export function CommitSummary({ comparison }: CommitSummaryProps) {
 
   return (
     <Stack spacing={1}>
+      <DeploymentHeadline commits={developerCommits} />
       <CommitTable commits={developerCommits} />
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
