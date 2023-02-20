@@ -2,7 +2,6 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_extra::extract::cookie::Key;
 use oauth2::basic::BasicClient;
 use std::sync::Arc;
 use tower_http::{
@@ -10,6 +9,7 @@ use tower_http::{
     LatencyUnit,
 };
 use tracing::Level;
+use axum_extra::extract::cookie::Key;
 
 mod error;
 mod github;
@@ -31,11 +31,10 @@ async fn shutdown_signal() {
     tracing::info!("Received Ctrl+C");
 }
 
-pub fn api_app(oauth2_client: BasicClient) -> Router {
+pub fn api_app(oauth2_client: BasicClient, cookie_key: Key) -> Router {
     let state = SharedState(Arc::new(State {
         oauth2_client,
-        // FIXME pass in as a cli param, rather than generating each time
-        cookie_key: Key::generate(),
+        cookie_key,
     }));
     Router::new()
         .route("/", get(root))

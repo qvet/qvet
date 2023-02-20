@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+./qvet-web/scripts/check
+./qvet-api/scripts/check
+./qvet-standalone/scripts/check

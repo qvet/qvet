@@ -55,5 +55,13 @@ To build a new release, run `./qvet-standalone/scripts/build.sh`, which will pro
 This can then be invoked as follows:
 
 ```bash
-docker run -d --rm --name ci-qvet --init -e GITHUB_CLIENT_ID -e GITHUB_CLIENT_SECRET -p 39105:39105 qvet-standalone --bind 0.0.0.0:39105
+docker run -d --rm --name ci-qvet --init -e GITHUB_CLIENT_ID -e GITHUB_CLIENT_SECRET -e QVET_COOKIE_KEY -p 39106:39105 qvet-standalone --bind 0.0.0.0:39105
 ```
+
+#### Environment variables
+
+| Environment Variable   | Example                           | Purpose                        | Notes                                                          |
+| ---------------------- | --------------------------------- | ------------------------------ | -------------------------------------------------------------- |
+| `GITHUB_CLIENT_ID`     | `Iv1.0123456789abcdef`            | Github App Client Id           | Required                                                       |
+| `GITHUB_CLIENT_SECRET` | random hexadecimal, 40 characters | Github App Client Secret       | Required                                                       |
+| `QVET_COOKIE_KEY`      | random hexadecimal, 64 characters | qvet private cookie encryption | Optional. If unset, a random key will be generated at runtime. |

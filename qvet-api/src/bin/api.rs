@@ -5,7 +5,8 @@ use qvet_api::serve;
 
 async fn run(args: runtime::Args) -> anyhow::Result<()> {
     let (client_id, client_secret) = runtime::github_credentials_from_env()?;
-    let app = api_app(github_oauth2_client(client_id, client_secret)?);
+    let cookie_key = runtime::cookie_key_from_env()?;
+    let app = api_app(github_oauth2_client(client_id, client_secret)?, cookie_key);
     serve(&args.bind, app).await?;
     Ok(())
 }

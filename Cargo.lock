@@ -1038,6 +1038,7 @@ version = "0.1.5"
 dependencies = [
  "anyhow",
  "axum",
+ "axum-extra",
  "http",
  "include_dir",
  "mime_guess",
