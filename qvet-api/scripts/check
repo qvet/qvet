@@ -4,5 +4,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-cargo clippy --all-targets
-cargo test --all-targets
+cargo fmt -- --check
+cargo clippy --all-targets --locked -- -D warnings
+cargo test --all-targets --locked

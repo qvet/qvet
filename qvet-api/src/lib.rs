@@ -2,6 +2,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use axum_extra::extract::cookie::Key;
 use oauth2::basic::BasicClient;
 use std::sync::Arc;
 use tower_http::{
@@ -9,12 +10,11 @@ use tower_http::{
     LatencyUnit,
 };
 use tracing::Level;
-use axum_extra::extract::cookie::Key;
 
 mod error;
-mod redacted;
 mod github;
 mod oauth_handler;
+mod redacted;
 pub mod runtime;
 mod state;
 

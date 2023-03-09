@@ -1,7 +1,7 @@
-use std::ops::Deref;
-use oauth2::basic::BasicClient;
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
+use oauth2::basic::BasicClient;
+use std::ops::Deref;
 use std::sync::Arc;
 
 pub struct State {
