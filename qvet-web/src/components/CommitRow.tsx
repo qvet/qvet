@@ -34,7 +34,7 @@ export default function CommitRow({ commit }: { commit: Commit }) {
           maxWidth: "500px",
         }}
       >
-        {commit.commit.message}
+        {commit.commit.message.split("\n")[0]}
       </TableCell>
       <TableCell>
         {commit.author ? <UserLink user={commit.author} /> : <i>unknown</i>}

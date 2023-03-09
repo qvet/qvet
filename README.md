@@ -40,7 +40,7 @@ All data is stored in Github, there is no additional persistent store/database r
 Start the two services in development/hot reload mode. Respectively:
 
 - `web` with `cd web && npm install && npm run dev`
-- `api` with `cd api && cargo watch -x 'run -- --bind 0.0.0.0:3000`
+- `api` with `cd api && cargo watch -x 'run -- --bind 0.0.0.0:3000'`
 
 ## Standalone deployment
 
