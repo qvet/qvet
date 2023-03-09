@@ -12,6 +12,7 @@ use tracing::Level;
 use axum_extra::extract::cookie::Key;
 
 mod error;
+mod redacted;
 mod github;
 mod oauth_handler;
 pub mod runtime;
