@@ -36,8 +36,8 @@ async function getProdTag(
   for await (const { data: tags } of tagPages) {
     for (const tag of tags) {
       if (
-        tag.name.startsWith("prod-") &&
-        !tag.name.startsWith("prod-revert-")
+        tag.name.match(new RegExp("^v[0-9]")) ||
+        (tag.name.startsWith("prod-") && !tag.name.startsWith("prod-revert-"))
       ) {
         return tag;
       }

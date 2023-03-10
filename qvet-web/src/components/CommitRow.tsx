@@ -18,9 +18,9 @@ export default function CommitRow({ commit }: { commit: Commit }) {
   const sha = commit.sha;
   const status = useCommitStatus(sha);
 
-  const [approve, setApprove] = useSetCommitState(status, sha, "success");
-  const [deny, setDeny] = useSetCommitState(status, sha, "failure");
-  const [clear, setClear] = useSetCommitState(status, sha, "pending");
+  const [approve, setApprove] = useSetCommitState(sha, "success");
+  const [deny, setDeny] = useSetCommitState(sha, "failure");
+  const [clear, setClear] = useSetCommitState(sha, "pending");
 
   return (
     <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
