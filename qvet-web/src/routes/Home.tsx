@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
+import RepoSelect from "src/components/RepoSelect";
 import CommitTable from "src/components/CommitTable";
 import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
@@ -53,6 +54,7 @@ export function Home() {
           ) : (
             <>
               <LoginStatus />
+              <RepoSelect />
               <Comparison />
             </>
           )
@@ -85,7 +87,7 @@ export function Comparison() {
     queryKey: [
       "getComparison",
       {
-        ownerRepo,
+        ownerRepo: ownerRepo.data,
         masterSha: masterSha.data,
         prodSha: prodTag.data?.commit.sha,
       },
@@ -93,11 +95,12 @@ export function Comparison() {
     queryFn: () =>
       getCommitComparison(
         octokit!,
-        ownerRepo,
+        ownerRepo.data!,
         masterSha.data!,
         prodTag.data!.commit.sha
       ),
-    enabled: !!octokit && !!masterSha.data && !!prodTag.data,
+    enabled:
+      !!octokit && !!ownerRepo.data && !!masterSha.data && !!prodTag.data,
   });
 
   return (

@@ -14,11 +14,11 @@ export function useCommitStatusQuery(sha: string) {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   return {
-    queryKey: ["getCommitStatus", { ownerRepo, sha }],
-    queryFn: () => getCommitStatus(octokit!, ownerRepo, sha),
+    queryKey: ["getCommitStatus", { ownerRepo: ownerRepo.data, sha }],
+    queryFn: () => getCommitStatus(octokit!, ownerRepo.data!, sha),
     refetchInterval: COMMIT_STATUS_POLL_INTERVAL_MS,
     staleTime: COMMIT_STATUS_STALE_TIME_MS,
-    enabled: !!octokit,
+    enabled: !!octokit && !!ownerRepo.data,
   };
 }
 

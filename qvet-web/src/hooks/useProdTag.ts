@@ -9,10 +9,10 @@ export default function useProdTag() {
   const ownerRepo = useOwnerRepo();
 
   return useQuery({
-    queryKey: ["getProdTag", { ownerRepo }],
-    queryFn: () => getProdTag(octokit!, ownerRepo),
+    queryKey: ["getProdTag", { ownerRepo: ownerRepo.data }],
+    queryFn: () => getProdTag(octokit!, ownerRepo.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit,
+    enabled: !!octokit && !!ownerRepo.data,
   });
 }
 
