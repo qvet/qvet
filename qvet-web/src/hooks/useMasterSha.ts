@@ -9,10 +9,10 @@ export default function useMasterSha() {
   const ownerRepo = useOwnerRepo();
 
   return useQuery({
-    queryKey: ["getMasterSha", { ownerRepo }],
-    queryFn: () => getMasterSha(octokit!, ownerRepo),
+    queryKey: ["getMasterSha", { ownerRepo: ownerRepo.data }],
+    queryFn: () => getMasterSha(octokit!, ownerRepo.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit,
+    enabled: !!octokit && !!ownerRepo.data,
   });
 }
 

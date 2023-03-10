@@ -9,10 +9,10 @@ export default function useProdTag() {
   const ownerRepo = useOwnerRepo();
 
   return useQuery({
-    queryKey: ["getProdTag", { ownerRepo }],
-    queryFn: () => getProdTag(octokit!, ownerRepo),
+    queryKey: ["getProdTag", { ownerRepo: ownerRepo.data }],
+    queryFn: () => getProdTag(octokit!, ownerRepo.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit,
+    enabled: !!octokit && !!ownerRepo.data,
   });
 }
 
@@ -36,8 +36,8 @@ async function getProdTag(
   for await (const { data: tags } of tagPages) {
     for (const tag of tags) {
       if (
-        tag.name.startsWith("prod-") &&
-        !tag.name.startsWith("prod-revert-")
+        tag.name.match(new RegExp("^v[0-9]")) ||
+        (tag.name.startsWith("prod-") && !tag.name.startsWith("prod-revert-"))
       ) {
         return tag;
       }

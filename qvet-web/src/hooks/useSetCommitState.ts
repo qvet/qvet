@@ -1,7 +1,6 @@
 import { setCommitStatus } from "src/queries";
 import { WriteableState } from "src/utils/status";
 import {
-  UseQueryResult,
   useMutation,
   UseMutationResult,
   useQueryClient,
@@ -11,7 +10,6 @@ import useLogin from "src/hooks/useLogin";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 
 export default function useSetCommitState(
-  status: UseQueryResult<unknown>,
   sha: string,
   state: WriteableState
 ): [UseMutationResult<unknown, unknown, void>, () => void] {
@@ -22,10 +20,10 @@ export default function useSetCommitState(
   const queryClient = useQueryClient();
   const setCommitState = useMutation(
     async () => {
-      if (!login.data || !octokit) {
+      if (!login.data || !octokit || !ownerRepo.data) {
         return;
       }
-      return setCommitStatus(octokit, ownerRepo, sha, {
+      return setCommitStatus(octokit, ownerRepo.data, sha, {
         user: login.data,
         state,
       });
@@ -36,7 +34,10 @@ export default function useSetCommitState(
         if (data === null) {
           return;
         }
-        queryClient.setQueryData(["getCommitStatus", { ownerRepo, sha }], data);
+        queryClient.setQueryData(
+          ["getCommitStatus", { ownerRepo: ownerRepo.data, sha }],
+          data
+        );
       },
     }
   );
