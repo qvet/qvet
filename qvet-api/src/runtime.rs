@@ -1,8 +1,8 @@
+use crate::redacted::Redacted;
 use anyhow::{anyhow, Context, Result};
+use axum_extra::extract::cookie::Key;
 use clap::Parser;
 use oauth2::basic::BasicClient;
-use axum_extra::extract::cookie::Key;
-use crate::redacted::Redacted;
 
 pub fn init_logging() {
     tracing_subscriber::fmt().with_ansi(false).init();
@@ -43,7 +43,9 @@ pub fn cookie_key_from_env() -> Result<Key> {
     // Key must be at minimum 512 bits
     let raw_key_len = raw_key.0.len();
     if raw_key_len < 64 {
-        return Err(anyhow!("{ENV_QVET_COOKIE_KEY} too short: must be 64 bytes, got: {raw_key_len} bytes"))
+        return Err(anyhow!(
+            "{ENV_QVET_COOKIE_KEY} too short: must be 64 bytes, got: {raw_key_len} bytes"
+        ));
     }
     Ok(Key::from(raw_key.0.as_bytes()))
 }
