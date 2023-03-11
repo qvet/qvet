@@ -1,0 +1,4 @@
+release:
+  identifiers:
+    - type: tag
+      pattern: "^v"
