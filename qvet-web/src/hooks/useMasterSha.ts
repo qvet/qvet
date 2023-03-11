@@ -1,27 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { Octokit } from "octokit";
 import useOctokit from "src/hooks/useOctokit";
-import useOwnerRepo from "src/hooks/useOwnerRepo";
-import { OwnerRepo } from "src/octokitHelpers";
+import { useRepo } from "src/hooks/useOwnerRepo";
+import { Repository } from "src/octokitHelpers";
 
 export default function useMasterSha() {
   const octokit = useOctokit();
-  const ownerRepo = useOwnerRepo();
+  const repo = useRepo();
 
   return useQuery({
-    queryKey: ["getMasterSha", { ownerRepo: ownerRepo.data }],
-    queryFn: () => getMasterSha(octokit!, ownerRepo.data!),
+    queryKey: ["getMasterSha", { ownerRepo: repo.data }],
+    queryFn: () => getMasterSha(octokit!, repo.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit && !!ownerRepo.data,
+    enabled: !!octokit && !!repo.data,
   });
 }
 
 async function getMasterSha(
   octokit: Octokit,
-  ownerRepo: OwnerRepo
+  repo: Repository
 ): Promise<string> {
   const branch = await octokit.rest.repos.getBranch({
-    ...ownerRepo,
+    owner: repo.owner.login,
+    repo: repo.name,
     branch: "master",
   });
   return branch.data.commit.sha;

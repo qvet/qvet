@@ -6,7 +6,7 @@ import useStore from "src/hooks/useStore";
 import { OwnerRepo, Repository, Installation } from "src/octokitHelpers";
 
 export default function useOwnerRepo(): UseQueryResult<OwnerRepo | null> {
-  const currentRepo = useCurrentRepo().currentRepo;
+  const currentRepo = useRepos().currentRepo;
   return useQuery({
     queryKey: ["ownerRepo", { currentRepo: currentRepo.data?.id }],
     queryFn: () => {
@@ -20,7 +20,11 @@ export default function useOwnerRepo(): UseQueryResult<OwnerRepo | null> {
   });
 }
 
-export function useCurrentRepo(): {
+export function useRepo(): UseQueryResult<Repository | null> {
+  return useRepos().currentRepo;
+}
+
+export function useRepos(): {
   currentRepo: UseQueryResult<Repository | null>;
   visibleRepos: UseQueryResult<Array<Repository>>;
   setSelectedRepo: (id: number) => void;
@@ -110,6 +114,7 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
 async function listInstallations(
   octokit: Octokit
 ): Promise<Array<Installation>> {
+  // FIXME pagination here
   const response =
     await octokit.rest.apps.listInstallationsForAuthenticatedUser();
   return response.data.installations;
@@ -122,6 +127,7 @@ async function listInstallationRepos(
   octokit: Octokit,
   installationId: number
 ): Promise<Array<Repository>> {
+  // FIXME pagination here
   const response =
     await octokit.rest.apps.listInstallationReposForAuthenticatedUser({
       installation_id: installationId,

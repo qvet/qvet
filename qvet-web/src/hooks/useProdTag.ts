@@ -1,18 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { Octokit } from "octokit";
 import useOctokit from "src/hooks/useOctokit";
+import useConfig, { Config } from "src/hooks/useConfig";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import { OwnerRepo } from "src/octokitHelpers";
 
 export default function useProdTag() {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
+  const config = useConfig();
+
+  const regexes = config.data;
 
   return useQuery({
-    queryKey: ["getProdTag", { ownerRepo: ownerRepo.data }],
-    queryFn: () => getProdTag(octokit!, ownerRepo.data!),
+    queryKey: [
+      "getProdTag",
+      { ownerRepo: ownerRepo.data, config: config.data },
+    ],
+    queryFn: () => getProdTag(octokit!, ownerRepo.data!, config.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
-    enabled: !!octokit && !!ownerRepo.data,
+    enabled: !!octokit && !!ownerRepo.data && !!config.data,
   });
 }
 
@@ -25,22 +32,30 @@ interface Tag {
 
 async function getProdTag(
   octokit: Octokit,
-  ownerRepo: OwnerRepo
+  ownerRepo: OwnerRepo,
+  config: Config
 ): Promise<Tag | null> {
   const tagPages = octokit.paginate.iterator(octokit.rest.repos.listTags, {
     ...ownerRepo,
     per_page: 100,
   });
 
-  // FIXME un-hardcode
+  const regexes = config.release.identifiers.map(
+    (identifier) => new RegExp(identifier.pattern)
+  );
+
+  let page = 0;
   for await (const { data: tags } of tagPages) {
     for (const tag of tags) {
-      if (
-        tag.name.match(new RegExp("^v[0-9]")) ||
-        (tag.name.startsWith("prod-") && !tag.name.startsWith("prod-revert-"))
-      ) {
-        return tag;
+      for (const regex of regexes) {
+        if (tag.name.match(regex)) {
+          return tag;
+        }
       }
+    }
+    page += 1;
+    if (page > 3) {
+      break;
     }
   }
 
