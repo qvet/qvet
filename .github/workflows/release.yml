@@ -10,11 +10,13 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
+  release:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup cache
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/bin/
@@ -23,19 +25,35 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-release-musl-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           profile: minimal
           components: clippy, rustfmt
           target: x86_64-unknown-linux-musl
-      - uses: actions/setup-node@v3
+      - name: Install node/npm
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-      - run: cd qvet-web && npm ci
-      - run: cd qvet-standalone && ./scripts/build-assets.sh && cargo build --locked --release --target x86_64-unknown-linux-musl
+      - name: Install musl-tools
+        run: |
+          set -ex
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+      - name: Install node dependencies
+        run: |
+          set -euo pipefail
+          cd qvet-web
+          npm ci
+      - name: Build binary
+        run: |
+          set -euo pipefail
+          cd qvet-standalone
+          ./scripts/build-assets.sh
+          cargo build --locked --release --target x86_64-unknown-linux-musl
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker Hub
@@ -43,7 +61,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      - name: Build and push
+      - name: Build and push docker image
         uses: docker/build-push-action@v4
         with:
           context: .
