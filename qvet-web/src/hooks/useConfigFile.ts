@@ -5,6 +5,14 @@ import { useRepo } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
 import { HTTPError } from "ky";
 
+function retry(failureCount: number, error: HTTPError): boolean {
+  return error.response.status === 404
+    ? false
+    : failureCount < 3
+    ? true
+    : false;
+}
+
 export default function useConfigFile(): UseQueryResult<string, HTTPError> {
   const octokit = useOctokit();
   const repo = useRepo();
@@ -13,6 +21,8 @@ export default function useConfigFile(): UseQueryResult<string, HTTPError> {
     queryKey: ["getConfigFileContents", { ownerRepo: repo.data }],
     queryFn: () => getConfigFileContents(octokit!, repo.data!),
     enabled: !!octokit && !!repo.data,
+    // Don't retry on 404
+    retry,
   });
 }
 

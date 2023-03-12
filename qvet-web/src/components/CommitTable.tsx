@@ -6,7 +6,14 @@ import TableRow from "@mui/material/TableRow";
 import { Commit } from "src/octokitHelpers";
 import CommitRow from "src/components/CommitRow";
 
-export default function CommitTable({ commits }: { commits: Array<Commit> }) {
+export default function CommitTable({
+  commits: rawCommits,
+}: {
+  commits: Array<Commit>;
+}) {
+  // FIXME warn/paginate on large numbers
+  const commits = rawCommits.slice(0, 100);
+
   return (
     <Table sx={{ minWidth: 650 }} size="small">
       <TableHead>

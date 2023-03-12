@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Octokit } from "octokit";
 import useOctokit from "src/hooks/useOctokit";
-import useConfig, { Config } from "src/hooks/useConfig";
+import useConfig from "src/hooks/useConfig";
+import { Config } from "src/utils/config";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import { OwnerRepo } from "src/octokitHelpers";
 
@@ -49,12 +50,15 @@ async function getProdTag(
     for (const tag of tags) {
       for (const regex of regexes) {
         if (tag.name.match(regex)) {
+          console.log(tag);
           return tag;
         }
       }
     }
+
+    // FIXME better pagination
     page += 1;
-    if (page > 3) {
+    if (page > 2) {
       break;
     }
   }
