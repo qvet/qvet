@@ -3,7 +3,7 @@ import Alert from "@mui/material/Alert";
 import Skeleton from "@mui/material/Skeleton";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import { useCurrentRepo } from "src/hooks/useOwnerRepo";
+import { useRepos } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
 
 interface Option {
@@ -16,7 +16,7 @@ function repoToOption(repo: Repository): Option {
 }
 
 export default function RepoSelect() {
-  const { currentRepo, visibleRepos, setSelectedRepo } = useCurrentRepo();
+  const { currentRepo, visibleRepos, setSelectedRepo } = useRepos();
 
   let options: Array<{ label: string; id: number }> = [];
   if (!!visibleRepos.data) {

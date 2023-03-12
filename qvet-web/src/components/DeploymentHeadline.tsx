@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Commit } from "src/octokitHelpers";
 import { commitStatusQuery } from "src/hooks/useCommitStatus";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
+import useConfig, { Action } from "src/hooks/useConfig";
 import useOctokit from "src/hooks/useOctokit";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
@@ -25,23 +26,29 @@ export default function CommitTable({ commits }: { commits: Array<Commit> }) {
       statusQuery.isSuccess && statusQuery.data?.state === "success"
   );
   const readyToDeploy = allSuccess && commits.length > 0;
-
-  const goToJenkins = useCallback(() => {
-    window.open(JENKINS_DEPLOY_UI, "_blank");
-  }, []);
+  const config = useConfig();
+  const action = !!config.data && config.data.actions.ready;
 
   return (
     <Collapse in={readyToDeploy}>
       <Alert
         severity="success"
-        action={
-          <Button color="inherit" size="small" onClick={goToJenkins}>
-            Go To Jenkins
-          </Button>
-        }
+        action={!!action ? <ReadyAction action={action} /> : null}
       >
         Ready to Deploy
       </Alert>
     </Collapse>
+  );
+}
+
+function ReadyAction({ action }: { action: Action }) {
+  const onAction = useCallback(() => {
+    window.open(action.url, "_blank");
+  }, [action]);
+
+  return (
+    <Button color="inherit" size="small" onClick={onAction}>
+      {action.name}
+    </Button>
   );
 }

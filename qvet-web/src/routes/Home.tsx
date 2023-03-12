@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
+import ConfigFile from "src/components/ConfigFile";
 import RepoSelect from "src/components/RepoSelect";
 import CommitTable from "src/components/CommitTable";
 import LoginStatus from "src/components/LoginStatus";
@@ -9,13 +10,14 @@ import LoginButton from "src/components/LoginButton";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
+import useConfig, { Config } from "src/hooks/useConfig";
 import useLoginRedirect from "src/hooks/useLoginRedirect";
 import useMasterSha from "src/hooks/useMasterSha";
-import useOwnerRepo from "src/hooks/useOwnerRepo";
+import useOwnerRepo, { useRepo } from "src/hooks/useOwnerRepo";
 import useProdTag from "src/hooks/useProdTag";
 import useAccessToken from "src/hooks/useAccessToken";
 import Stack from "@mui/material/Stack";
-import { OwnerRepo, CommitComparison } from "src/octokitHelpers";
+import { OwnerRepo, CommitComparison, Repository } from "src/octokitHelpers";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -25,7 +27,6 @@ import { LOCAL_STORAGE_KEYS } from "src/constants";
 
 export function Home() {
   const accessToken = useAccessToken();
-  const loggedIn = !(accessToken.isLoading || accessToken.isError);
   const loginRedirect = useLoginRedirect();
   const oauthFlowInFlight = !!localStorage.getItem(
     LOCAL_STORAGE_KEYS.oauthFlowInternalState
@@ -56,6 +57,9 @@ export function Home() {
               <LoginStatus />
               <RepoSelect />
               <Comparison />
+              {
+                //<ConfigFile />
+              }
             </>
           )
         }
@@ -80,8 +84,10 @@ async function getCommitComparison(
 export function Comparison() {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
+  const repo = useRepo();
   const masterSha = useMasterSha();
   const prodTag = useProdTag();
+  const config = useConfig();
 
   const comparison = useQuery({
     queryKey: [
@@ -109,9 +115,11 @@ export function Comparison() {
         <Box padding={2}>
           {prodTag.data === null ? (
             <Alert severity="info">No previous prod release</Alert>
-          ) : comparison.isError ? (
+          ) : repo.data === null ? (
+            <Alert severity="info">No repositories found</Alert>
+          ) : comparison.isError || config.isError || repo.isError ? (
             <Alert severity="error">Error loading comparison</Alert>
-          ) : comparison.isLoading ? (
+          ) : comparison.isLoading || config.isLoading || repo.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (
                 <Skeleton
@@ -123,7 +131,11 @@ export function Comparison() {
               ))}
             </Stack>
           ) : (
-            <CommitSummary comparison={comparison.data} />
+            <CommitSummary
+              comparison={comparison.data}
+              config={config.data}
+              repo={repo.data}
+            />
           )}
         </Box>
       </Paper>
@@ -133,15 +145,23 @@ export function Comparison() {
 
 interface CommitSummaryProps {
   comparison: CommitComparison;
+  config: Config;
+  repo: Repository;
 }
 
-export function CommitSummary({ comparison }: CommitSummaryProps) {
+export function CommitSummary({
+  comparison,
+  config,
+  repo,
+}: CommitSummaryProps) {
   const developerCommits = comparison.commits.filter((commit) => {
-    // FIXME un-hardcode
-    return !(commit.author && commit.author.login === "rebors[bot]");
+    return !config.author.ignore.some(
+      (ignoredLogin) => ignoredLogin === commit.author?.login
+    );
   });
   developerCommits.reverse();
   const hiddenCommitCount = comparison.commits.length - developerCommits.length;
+  const ignoredLoginList = config.author.ignore.join(", ");
 
   return (
     <Stack spacing={1}>
@@ -149,12 +169,14 @@ export function CommitSummary({ comparison }: CommitSummaryProps) {
       <CommitTable commits={developerCommits} />
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
-        <code>master</code> (view the{" "}
+        <code>{repo.default_branch}</code> (view the{" "}
         {<Link to={comparison.html_url}>Github comparison</Link>}):
       </Typography>
-      <Typography variant="caption">
-        {hiddenCommitCount} commits from <code>bors</code> are hidden.
-      </Typography>
+      {hiddenCommitCount > 0 ? (
+        <Typography variant="caption">
+          {hiddenCommitCount} commits from {ignoredLoginList} are hidden.
+        </Typography>
+      ) : null}
     </Stack>
   );
 }
