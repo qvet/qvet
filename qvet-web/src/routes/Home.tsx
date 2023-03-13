@@ -2,15 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
-import ConfigFile from "src/components/ConfigFile";
 import RepoSelect from "src/components/RepoSelect";
 import CommitTable from "src/components/CommitTable";
+import ConfigStatus from "src/components/ConfigStatus";
 import LoginStatus from "src/components/LoginStatus";
 import LoginButton from "src/components/LoginButton";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
 import VersionUpdate from "src/components/VersionUpdate";
 import useOctokit from "src/hooks/useOctokit";
-import useConfig, { Config } from "src/hooks/useConfig";
+import useConfig from "src/hooks/useConfig";
+import { Config } from "src/utils/config";
 import useLoginRedirect from "src/hooks/useLoginRedirect";
 import useMasterSha from "src/hooks/useMasterSha";
 import useOwnerRepo, { useRepo } from "src/hooks/useOwnerRepo";
@@ -57,9 +58,6 @@ export function Home() {
               <LoginStatus />
               <RepoSelect />
               <Comparison />
-              {
-                //<ConfigFile />
-              }
             </>
           )
         }
@@ -166,6 +164,7 @@ export function CommitSummary({
   return (
     <Stack spacing={1}>
       <DeploymentHeadline commits={developerCommits} />
+      <ConfigStatus />
       <CommitTable commits={developerCommits} />
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
@@ -177,6 +176,7 @@ export function CommitSummary({
           {hiddenCommitCount} commits from {ignoredLoginList} are hidden.
         </Typography>
       ) : null}
+      <ConfigStatus showInfo />
     </Stack>
   );
 }

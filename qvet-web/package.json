@@ -16,6 +16,7 @@
     "@mui/material": "^5.11.6",
     "@octokit/openapi-types": "^16.0.0",
     "@tanstack/react-query": "^4.23.0",
+    "ajv": "^8.12.0",
     "axios": "^1.2.6",
     "ky": "^0.33.2",
     "octokit": "^2.0.14",

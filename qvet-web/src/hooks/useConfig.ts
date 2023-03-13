@@ -1,56 +1,41 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { Octokit } from "octokit";
 import useConfigFile from "src/hooks/useConfigFile";
-import { Repository } from "src/octokitHelpers";
-import YAML from "yaml";
-
-export interface Config {
-  author: {
-    ignore: Array<string>;
-  };
-  actions: {
-    ready: Action | null;
-  };
-  release: {
-    identifiers: Array<Identifier>;
-  };
-}
-
-export interface ActionLink {
-  type: "link";
-  name: string;
-  url: string;
-}
-export type Action = ActionLink;
-
-export interface IdentifierTag {
-  type: "tag";
-  pattern: string;
-}
-export type Identifier = IdentifierTag;
+import {
+  parseConfigFile,
+  Config,
+  ParseConfigFileResult,
+} from "src/utils/config";
 
 export default function useConfig(): UseQueryResult<Config> {
-  const configFile = useConfigFile();
+  const configMeta = useConfigMeta();
 
   return useQuery({
-    queryKey: ["config", { configFile: configFile.data }],
-    queryFn: () => parseConfigFile(configFile.data!),
-    enabled: configFile.isSuccess,
+    queryKey: ["config", { configMeta: configMeta.data }],
+    queryFn: () => configMeta.data!.parseResult.config,
+    enabled: !!configMeta.data,
   });
 }
 
-function parseConfigFile(configFile: string): Config {
-  const raw = YAML.parse(configFile);
-  // FIXME better validation and parsing
-  return {
-    author: {
-      ignore: raw.author?.ignore ?? [],
+interface ConfigMeta {
+  parseResult: ParseConfigFileResult;
+  repositoryFileMissing: boolean;
+}
+
+export function useConfigMeta(): UseQueryResult<ConfigMeta> {
+  const configFile = useConfigFile();
+
+  const repositoryFileMissing =
+    configFile.isError && configFile.error.response.status === 404;
+  return useQuery({
+    queryKey: ["configMeta", { configFile: configFile.data }],
+    // if we have a missing file, load a default config
+    queryFn: () => {
+      const parseResult = parseConfigFile(configFile.data || "");
+      return {
+        parseResult,
+        repositoryFileMissing,
+      };
     },
-    actions: {
-      ready: raw.actions?.ready ?? null,
-    },
-    release: {
-      identifiers: raw.release?.identifiers ?? [],
-    },
-  };
+    enabled: configFile.isSuccess || repositoryFileMissing,
+  });
 }

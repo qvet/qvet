@@ -1,5 +1,6 @@
 import Stack from "@mui/material/Stack";
-import useConfigFile from "src/hooks/useConfigFile";
+import YAML from "yaml";
+import { useConfigMeta } from "src/hooks/useConfig";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
@@ -7,22 +8,15 @@ import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 
 export default function ConfigFile() {
-  const configFile = useConfigFile();
+  const configMeta = useConfigMeta();
 
   return (
     <>
       <Paper elevation={3}>
         <Box padding={2} minWidth={500}>
-          {configFile.isError ? (
-            configFile.error.response.status === 404 ? (
-              <Alert severity="warning">
-                <AlertTitle>Config file not found</AlertTitle>
-                Does <code>qvet.yml</code> exit in your default branch?
-              </Alert>
-            ) : (
-              <Alert severity="error">Error loading comparison</Alert>
-            )
-          ) : configFile.isLoading ? (
+          {configMeta.isError ? (
+            <Alert severity="error">Error loading comparison</Alert>
+          ) : configMeta.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(21)).map((_value, index) => (
                 <Skeleton
@@ -33,6 +27,16 @@ export default function ConfigFile() {
                 />
               ))}
             </Stack>
+          ) : configMeta.data.repositoryFileMissing ? (
+            <Alert severity="warning">
+              <AlertTitle>Config file not found</AlertTitle>
+              Does <code>qvet.yml</code> exist in your default branch?
+            </Alert>
+          ) : configMeta.data.parseResult.errorsText ? (
+            <Alert severity="error">
+              <AlertTitle>Invalid config file</AlertTitle>
+              {configMeta.data.parseResult.errorsText}
+            </Alert>
           ) : (
             <Box
               style={{
@@ -41,7 +45,7 @@ export default function ConfigFile() {
                 whiteSpace: "pre",
               }}
             >
-              {configFile.data.trim()}
+              {YAML.stringify(configMeta.data.parseResult.config)}
             </Box>
           )}
         </Box>

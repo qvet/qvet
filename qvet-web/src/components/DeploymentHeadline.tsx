@@ -2,16 +2,13 @@ import { useQueries } from "@tanstack/react-query";
 import { Commit } from "src/octokitHelpers";
 import { commitStatusQuery } from "src/hooks/useCommitStatus";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
-import useConfig, { Action } from "src/hooks/useConfig";
+import useConfig from "src/hooks/useConfig";
+import { Action } from "src/utils/config";
 import useOctokit from "src/hooks/useOctokit";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
 import Button from "@mui/material/Button";
 import { useCallback } from "react";
-
-// FIXME unhardcode
-const JENKINS_DEPLOY_UI =
-  "http://localhost:39101/job/ProductionDeployment/job/Deploy/";
 
 export default function CommitTable({ commits }: { commits: Array<Commit> }) {
   const octokit = useOctokit();
