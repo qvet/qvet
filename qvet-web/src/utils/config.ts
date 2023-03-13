@@ -8,10 +8,19 @@ const SCHEMA_AUTHOR_LOGIN = {
   maxLength: 128,
 };
 
-const SCHEMA_AUTHOR = {
+const SCHEMA_COMMIT_IGNORE = {
   type: "object",
   properties: {
-    ignore: { type: "array", items: SCHEMA_AUTHOR_LOGIN, maxItems: 32 },
+    authors: { type: "array", items: SCHEMA_AUTHOR_LOGIN, maxItems: 32 },
+  },
+  required: [],
+  additionalProperties: false,
+};
+
+const SCHEMA_COMMIT = {
+  type: "object",
+  properties: {
+    ignore: SCHEMA_COMMIT_IGNORE,
   },
   required: [],
   additionalProperties: false,
@@ -32,7 +41,7 @@ const SCHEMA_ACTION = {
   oneOf: [SCHEMA_ACTION_LINK],
 };
 
-const SCHEMA_ACTIONS = {
+const SCHEMA_ACTION_LOOKUP = {
   type: "object",
   properties: {
     ready: SCHEMA_ACTION,
@@ -71,8 +80,8 @@ const SCHEMA_RELEASE = {
 const SCHEMA = {
   type: "object",
   properties: {
-    author: SCHEMA_AUTHOR,
-    actions: SCHEMA_ACTIONS,
+    actions: SCHEMA_ACTION_LOOKUP,
+    commit: SCHEMA_COMMIT,
     release: SCHEMA_RELEASE,
   },
   required: [],
@@ -80,11 +89,13 @@ const SCHEMA = {
 };
 
 export interface Config {
-  author: {
-    ignore: Array<string>;
-  };
   actions: {
     ready: Action | null;
+  };
+  commit: {
+    ignore: {
+      authors: Array<string>;
+    };
   };
   release: {
     identifiers: Array<Identifier>;
@@ -123,11 +134,13 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
 // FIXME remove defaults from hardcoding
 function standardiseConfig(raw: any): Config {
   return {
-    author: {
-      ignore: raw.author?.ignore ?? ["rebors[bot]"],
-    },
     actions: {
       ready: raw.actions?.ready ?? null,
+    },
+    commit: {
+      ignore: {
+        authors: raw.commit?.ignore?.authors ?? ["rebors[bot]"],
+      },
     },
     release: {
       identifiers: raw.release?.identifiers ?? [

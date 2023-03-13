@@ -152,14 +152,15 @@ export function CommitSummary({
   config,
   repo,
 }: CommitSummaryProps) {
+  const authorLogins = config.commit.ignore.authors;
   const developerCommits = comparison.commits.filter((commit) => {
-    return !config.author.ignore.some(
+    return !authorLogins.some(
       (ignoredLogin) => ignoredLogin === commit.author?.login
     );
   });
   developerCommits.reverse();
   const hiddenCommitCount = comparison.commits.length - developerCommits.length;
-  const ignoredLoginList = config.author.ignore.join(", ");
+  const ignoredLoginList = authorLogins.join(", ");
 
   return (
     <Stack spacing={1}>
