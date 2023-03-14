@@ -5,6 +5,10 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useRepos } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
+import IconButton from "@mui/material/IconButton";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import AddIcon from "@mui/icons-material/Add";
 
 interface Option {
   label: string;
@@ -16,6 +20,7 @@ function repoToOption(repo: Repository): Option {
 }
 
 export default function RepoSelect() {
+  // FIXME we always know this in advance, could be props here
   const { currentRepo, visibleRepos, setSelectedRepo } = useRepos();
 
   let options: Array<{ label: string; id: number }> = [];
@@ -44,17 +49,28 @@ export default function RepoSelect() {
   ) : currentRepo.isError || visibleRepos.isError ? (
     <Alert severity="error">"error while loading repos"</Alert>
   ) : (
-    <Autocomplete
-      disableClearable
-      value={value}
-      onChange={(event: any, newValue: Option | null) => {
-        setValue(newValue);
-      }}
-      options={options}
-      isOptionEqualToValue={optionEq}
-      sx={{ width: 400 }}
-      renderInput={(params) => <TextField {...params} label="Repository" />}
-    />
+    <Stack direction="row" spacing={0} alignItems="center">
+      <Autocomplete
+        disableClearable
+        value={value}
+        onChange={(_event: any, newValue: Option | null) => {
+          setValue(newValue);
+        }}
+        options={options}
+        isOptionEqualToValue={optionEq}
+        sx={{ width: 400 }}
+        renderInput={(params) => <TextField {...params} label="Repository" />}
+      />
+      <Box>
+        <IconButton
+          aria-label="add repository"
+          target="_blane"
+          href="https://github.com/apps/qvet"
+        >
+          <AddIcon />
+        </IconButton>
+      </Box>
+    </Stack>
   );
 }
 

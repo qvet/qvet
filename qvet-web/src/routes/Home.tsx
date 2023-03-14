@@ -57,8 +57,7 @@ export function Home() {
           ) : (
             <>
               <LoginStatus />
-              <RepoSelect />
-              <Comparison />
+              <Installations />
             </>
           )
         }
@@ -80,10 +79,41 @@ async function getCommitComparison(
   return comparison.data;
 }
 
-export function Comparison() {
+function Installations() {
+  const repo = useRepo();
+
+  return repo.isError ? (
+    <Paper elevation={3}>
+      <Box padding={2}>
+        <Alert severity="error">Error loading repositories</Alert>
+      </Box>
+    </Paper>
+  ) : repo.isLoading ? (
+    <Skeleton variant="rounded" width={450} height={56} />
+  ) : repo.data === null ? (
+    <Paper elevation={3}>
+      <Box padding={2}>
+        <Alert severity="info">
+          <AlertTitle>No repositories found</AlertTitle>
+          You need to install the{" "}
+          <Link target="_blank" to="https://github.com/apps/qvet">
+            qvet GitHub App
+          </Link>{" "}
+          on a repository before it is listed here.
+        </Alert>
+      </Box>
+    </Paper>
+  ) : (
+    <>
+      <RepoSelect />
+      <Comparison repo={repo.data} />
+    </>
+  );
+}
+
+export function Comparison({ repo }: { repo: Repository }) {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
-  const repo = useRepo();
   const masterSha = useMasterSha();
   const prodTag = useProdTag();
   const config = useConfig();
@@ -117,18 +147,9 @@ export function Comparison() {
         <Box padding={2}>
           {prodTag.data === null ? (
             <Alert severity="info">No previous prod release</Alert>
-          ) : repo.data === null ? (
-            <Alert severity="info">
-              <AlertTitle>No repositories found</AlertTitle>
-              You need to install the{" "}
-              <Link target="_blank" to="https://github.com/apps/qvet">
-                qvet GitHub App
-              </Link>{" "}
-              on a repository before it is listed here.
-            </Alert>
-          ) : comparison.isError || config.isError || repo.isError ? (
+          ) : comparison.isError || config.isError ? (
             <Alert severity="error">Error loading comparison</Alert>
-          ) : comparison.isLoading || config.isLoading || repo.isLoading ? (
+          ) : comparison.isLoading || config.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (
                 <Skeleton
@@ -143,7 +164,7 @@ export function Comparison() {
             <CommitSummary
               comparison={comparison.data}
               config={config.data}
-              repo={repo.data}
+              repo={repo}
             />
           )}
         </Box>
