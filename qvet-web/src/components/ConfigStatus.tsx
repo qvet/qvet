@@ -23,7 +23,7 @@ export default function ConfigStatus({ showInfo }: { showInfo?: boolean }) {
     ? { text: "Invalid config file", severity: "error" }
     : configMeta.isLoading
     ? { text: "Loading config file...", severity: "info" }
-    : { text: "Config file loaded", severity: "info" };
+    : { text: "Using custom settings from config file", severity: "info" };
 
   const onAction = useCallback(() => {
     setDialogOpen(true);
@@ -65,7 +65,7 @@ function SimpleDialog(props: SimpleDialogProps) {
 
   return (
     <Dialog onClose={onClose} open={open}>
-      <DialogTitle>Config Status</DialogTitle>
+      <DialogTitle>Configuration Details</DialogTitle>
       <ConfigFile />
     </Dialog>
   );

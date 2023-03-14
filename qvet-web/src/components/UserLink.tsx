@@ -9,7 +9,11 @@ interface UserLinkProps {
 }
 
 export default function UserLink({ user, inline }: UserLinkProps) {
-  const link = <Link to={user.html_url}>{user.login}</Link>;
+  const link = (
+    <Link target="_blank" to={user.html_url}>
+      {user.login}
+    </Link>
+  );
   if (inline) {
     return link;
   }

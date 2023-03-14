@@ -20,6 +20,8 @@ export default function useConfigFile(): UseQueryResult<string, HTTPError> {
   return useQuery({
     queryKey: ["getConfigFileContents", { ownerRepo: repo.data }],
     queryFn: () => getConfigFileContents(octokit!, repo.data!),
+    // Never reload config file without page reload
+    staleTime: Infinity,
     enabled: !!octokit && !!repo.data,
     // Don't retry on 404
     retry,

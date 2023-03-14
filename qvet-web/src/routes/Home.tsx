@@ -21,6 +21,7 @@ import Stack from "@mui/material/Stack";
 import { OwnerRepo, CommitComparison, Repository } from "src/octokitHelpers";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 import Typography from "@mui/material/Typography";
@@ -56,8 +57,7 @@ export function Home() {
           ) : (
             <>
               <LoginStatus />
-              <RepoSelect />
-              <Comparison />
+              <Installations />
             </>
           )
         }
@@ -79,10 +79,41 @@ async function getCommitComparison(
   return comparison.data;
 }
 
-export function Comparison() {
+function Installations() {
+  const repo = useRepo();
+
+  return repo.isError ? (
+    <Paper elevation={3}>
+      <Box padding={2}>
+        <Alert severity="error">Error loading repositories</Alert>
+      </Box>
+    </Paper>
+  ) : repo.isLoading ? (
+    <Skeleton variant="rounded" width={450} height={56} />
+  ) : repo.data === null ? (
+    <Paper elevation={3}>
+      <Box padding={2}>
+        <Alert severity="info">
+          <AlertTitle>No repositories found</AlertTitle>
+          You need to install the{" "}
+          <Link target="_blank" to="https://github.com/apps/qvet">
+            qvet GitHub App
+          </Link>{" "}
+          on a repository before it is listed here.
+        </Alert>
+      </Box>
+    </Paper>
+  ) : (
+    <>
+      <RepoSelect />
+      <Comparison repo={repo.data} />
+    </>
+  );
+}
+
+export function Comparison({ repo }: { repo: Repository }) {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
-  const repo = useRepo();
   const masterSha = useMasterSha();
   const prodTag = useProdTag();
   const config = useConfig();
@@ -105,6 +136,9 @@ export function Comparison() {
       ),
     enabled:
       !!octokit && !!ownerRepo.data && !!masterSha.data && !!prodTag.data,
+    // default branch should not be rewritten, this will not go out of date
+    // unless the refs are updated
+    staleTime: Infinity,
   });
 
   return (
@@ -113,11 +147,9 @@ export function Comparison() {
         <Box padding={2}>
           {prodTag.data === null ? (
             <Alert severity="info">No previous prod release</Alert>
-          ) : repo.data === null ? (
-            <Alert severity="info">No repositories found</Alert>
-          ) : comparison.isError || config.isError || repo.isError ? (
+          ) : comparison.isError || config.isError ? (
             <Alert severity="error">Error loading comparison</Alert>
-          ) : comparison.isLoading || config.isLoading || repo.isLoading ? (
+          ) : comparison.isLoading || config.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (
                 <Skeleton
@@ -132,7 +164,7 @@ export function Comparison() {
             <CommitSummary
               comparison={comparison.data}
               config={config.data}
-              repo={repo.data}
+              repo={repo}
             />
           )}
         </Box>
@@ -170,7 +202,12 @@ export function CommitSummary({
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
         <code>{repo.default_branch}</code> (view the{" "}
-        {<Link to={comparison.html_url}>Github comparison</Link>}):
+        {
+          <Link target="_blank" to={comparison.html_url}>
+            Github comparison
+          </Link>
+        }
+        ):
       </Typography>
       {hiddenCommitCount > 0 ? (
         <Typography variant="caption">

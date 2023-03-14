@@ -1,5 +1,4 @@
 import Stack from "@mui/material/Stack";
-import YAML from "yaml";
 import { useConfigMeta } from "src/hooks/useConfig";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
@@ -45,7 +44,7 @@ export default function ConfigFile() {
                 whiteSpace: "pre",
               }}
             >
-              {YAML.stringify(configMeta.data.parseResult.config)}
+              {JSON.stringify(configMeta.data.parseResult.config, undefined, 2)}
             </Box>
           )}
         </Box>

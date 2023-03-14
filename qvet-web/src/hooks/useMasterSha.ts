@@ -12,6 +12,7 @@ export default function useMasterSha() {
     queryKey: ["getMasterSha", { ownerRepo: repo.data }],
     queryFn: () => getMasterSha(octokit!, repo.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
+    staleTime: GIT_REF_POLL_INTERVAL_MS,
     enabled: !!octokit && !!repo.data,
   });
 }
