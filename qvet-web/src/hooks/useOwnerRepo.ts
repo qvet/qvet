@@ -16,6 +16,8 @@ export default function useOwnerRepo(): UseQueryResult<OwnerRepo | null> {
       }
       return { owner: repo.owner.login, repo: repo.name };
     },
+    // pure data mapper
+    staleTime: Infinity,
     enabled: currentRepo.isSuccess,
   });
 }
@@ -38,6 +40,8 @@ export function useRepos(): {
       { selectedRepo, visibleRepos: visibleRepos.data },
     ],
     queryFn: () => lookupRepository(selectedRepo, visibleRepos.data!),
+    // pure data mapper
+    staleTime: Infinity,
     enabled: visibleRepos.isSuccess,
   });
 
@@ -73,6 +77,8 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
   const installations = useQuery({
     queryKey: ["listInstallations", { login: login.data! }],
     queryFn: () => listInstallations(octokit!),
+    // Never update after page load
+    staleTime: Infinity,
     enabled: !!octokit && !!login.data,
   });
 
@@ -80,6 +86,8 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
     queries: (installations.data ?? []).map((installation: Installation) => ({
       queryKey: ["listInstallationRepos", { installationId: installation.id }],
       queryFn: () => listInstallationRepos(octokit!, installation.id),
+      // Never update after page load
+      staleTime: Infinity,
       enabled: !!octokit,
     })),
   });
@@ -88,7 +96,11 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
       "allInstallationRepos",
       { items: installationRepoQueries.map((query) => query.data) },
     ],
-    queryFn: () => installationRepoQueries.map((query) => query.data!).flat(),
+    queryFn: () => {
+      return installationRepoQueries.map((query) => query.data!).flat();
+    },
+    // pure data mapper
+    staleTime: Infinity,
     enabled:
       !!octokit &&
       // don't run until we actually know the list of installations

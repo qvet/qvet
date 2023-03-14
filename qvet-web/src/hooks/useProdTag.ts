@@ -11,8 +11,6 @@ export default function useProdTag() {
   const ownerRepo = useOwnerRepo();
   const config = useConfig();
 
-  const regexes = config.data;
-
   return useQuery({
     queryKey: [
       "getProdTag",
@@ -20,6 +18,7 @@ export default function useProdTag() {
     ],
     queryFn: () => getProdTag(octokit!, ownerRepo.data!, config.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
+    staleTime: GIT_REF_POLL_INTERVAL_MS,
     enabled: !!octokit && !!ownerRepo.data && !!config.data,
   });
 }
@@ -50,7 +49,6 @@ async function getProdTag(
     for (const tag of tags) {
       for (const regex of regexes) {
         if (tag.name.match(regex)) {
-          console.log(tag);
           return tag;
         }
       }

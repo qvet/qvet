@@ -1,7 +1,12 @@
 import Ajv from "ajv";
 import YAML from "yaml";
 
-const ajv = new Ajv({ strict: true, allErrors: true, timestamp: "string" });
+const ajv = new Ajv({
+  strict: true,
+  allErrors: true,
+  timestamp: "string",
+  verbose: true,
+});
 
 const SCHEMA_AUTHOR_LOGIN = {
   type: "string",
@@ -80,7 +85,7 @@ const SCHEMA_RELEASE = {
 const SCHEMA = {
   type: "object",
   properties: {
-    actions: SCHEMA_ACTION_LOOKUP,
+    action: SCHEMA_ACTION_LOOKUP,
     commit: SCHEMA_COMMIT,
     release: SCHEMA_RELEASE,
   },
@@ -89,7 +94,7 @@ const SCHEMA = {
 };
 
 export interface Config {
-  actions: {
+  action: {
     ready: Action | null;
   };
   commit: {
@@ -134,8 +139,8 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
 // FIXME remove defaults from hardcoding
 function standardiseConfig(raw: any): Config {
   return {
-    actions: {
-      ready: raw.actions?.ready ?? null,
+    action: {
+      ready: raw.action?.ready ?? null,
     },
     commit: {
       ignore: {

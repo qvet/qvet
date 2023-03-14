@@ -24,7 +24,7 @@ export default function CommitTable({ commits }: { commits: Array<Commit> }) {
   );
   const readyToDeploy = allSuccess && commits.length > 0;
   const config = useConfig();
-  const action = !!config.data && config.data.actions.ready;
+  const action = !!config.data && config.data.action.ready;
 
   return (
     <Collapse in={readyToDeploy}>

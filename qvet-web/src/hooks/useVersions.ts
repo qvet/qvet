@@ -16,11 +16,13 @@ export default function useVersions(): [
       queryKey: ["getVersion"],
       queryFn: () => getVersion(),
       refetchInterval: VERSION_POLL_INTERVAL_MS,
+      staleTime: VERSION_POLL_INTERVAL_MS,
     }),
     useQuery({
       queryKey: ["getVersionUncached"],
       queryFn: () => getVersionUncached(),
       refetchInterval: VERSION_POLL_INTERVAL_MS,
+      staleTime: VERSION_POLL_INTERVAL_MS,
     }),
   ];
 }

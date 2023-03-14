@@ -12,6 +12,8 @@ export default function useConfig(): UseQueryResult<Config> {
   return useQuery({
     queryKey: ["config", { configMeta: configMeta.data }],
     queryFn: () => configMeta.data!.parseResult.config,
+    // Pure mapping function
+    staleTime: Infinity,
     enabled: !!configMeta.data,
   });
 }
@@ -36,6 +38,8 @@ export function useConfigMeta(): UseQueryResult<ConfigMeta> {
         repositoryFileMissing,
       };
     },
+    // Config will always be the same from the same file
+    staleTime: Infinity,
     enabled: configFile.isSuccess || repositoryFileMissing,
   });
 }
