@@ -136,7 +136,6 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
   return { config, errorsText };
 }
 
-// FIXME remove defaults from hardcoding
 function standardiseConfig(raw: any): Config {
   return {
     action: {
@@ -144,7 +143,7 @@ function standardiseConfig(raw: any): Config {
     },
     commit: {
       ignore: {
-        authors: raw.commit?.ignore?.authors ?? ["rebors[bot]"],
+        authors: raw.commit?.ignore?.authors ?? [],
       },
     },
     release: {
@@ -152,10 +151,6 @@ function standardiseConfig(raw: any): Config {
         {
           type: "tag",
           pattern: "^v",
-        },
-        {
-          type: "tag",
-          pattern: "^prod-[0-9]",
         },
       ],
     },
