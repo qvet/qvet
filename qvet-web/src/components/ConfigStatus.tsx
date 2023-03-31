@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
@@ -66,7 +67,9 @@ function SimpleDialog(props: SimpleDialogProps) {
   return (
     <Dialog onClose={onClose} open={open}>
       <DialogTitle>Configuration Details</DialogTitle>
-      <ConfigFile />
+      <Box padding={1}>
+        <ConfigFile />
+      </Box>
     </Dialog>
   );
 }
