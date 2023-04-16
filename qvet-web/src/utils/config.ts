@@ -17,6 +17,7 @@ const SCHEMA_COMMIT_IGNORE = {
   type: "object",
   properties: {
     authors: { type: "array", items: SCHEMA_AUTHOR_LOGIN, maxItems: 32 },
+    merges: { type: "boolean" },
   },
   required: [],
   additionalProperties: false,
@@ -100,6 +101,7 @@ export interface Config {
   commit: {
     ignore: {
       authors: Array<string>;
+      merges: boolean;
     };
   };
   release: {
@@ -144,6 +146,7 @@ function standardiseConfig(raw: any): Config {
     commit: {
       ignore: {
         authors: raw.commit?.ignore?.authors ?? [],
+        merges: raw.commit?.ignore?.merges ?? false,
       },
     },
     release: {

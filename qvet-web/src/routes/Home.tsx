@@ -185,14 +185,34 @@ export function CommitSummary({
   repo,
 }: CommitSummaryProps) {
   const authorLogins = config.commit.ignore.authors;
+  const merges = config.commit.ignore.merges;
   const developerCommits = comparison.commits.filter((commit) => {
-    return !authorLogins.some(
-      (ignoredLogin) => ignoredLogin === commit.author?.login
-    );
+    // Is a merge (and we don't want merges)
+    if (merges && commit.parents.length > 1) {
+      return false;
+    }
+
+    // Author is in the ignore list
+    if (
+      authorLogins.some((ignoredLogin) => ignoredLogin === commit.author?.login)
+    ) {
+      return false;
+    }
+    return true;
   });
   developerCommits.reverse();
   const hiddenCommitCount = comparison.commits.length - developerCommits.length;
-  const ignoredLoginList = authorLogins.join(", ");
+  const ignoredParts = [];
+  if (merges) {
+    ignoredParts.push("merges");
+  }
+  if (authorLogins.length > 0) {
+    ignoredParts.push(
+      `author${authorLogins.length > 1 ? "s" : ""} ${authorLogins.join(", ")}`
+    );
+  }
+
+  const ignoredDescription = ignoredParts.join(", and ");
 
   return (
     <Stack spacing={1}>
@@ -211,7 +231,7 @@ export function CommitSummary({
       </Typography>
       {hiddenCommitCount > 0 ? (
         <Typography variant="caption">
-          {hiddenCommitCount} commits from {ignoredLoginList} are hidden.
+          {hiddenCommitCount} commits from {ignoredDescription} are hidden.
         </Typography>
       ) : null}
       <ConfigStatus showInfo />
