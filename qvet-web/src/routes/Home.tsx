@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Octokit } from "octokit";
 import RepoSelect from "src/components/RepoSelect";
@@ -184,6 +184,8 @@ export function CommitSummary({
   config,
   repo,
 }: CommitSummaryProps) {
+  const [expand, setExpand] = useState<boolean>(false);
+
   const authorLogins = config.commit.ignore.authors;
   const merges = config.commit.ignore.merges;
   const developerCommits = comparison.commits.filter((commit) => {
@@ -200,8 +202,8 @@ export function CommitSummary({
     }
     return true;
   });
-  developerCommits.reverse();
-  const hiddenCommitCount = comparison.commits.length - developerCommits.length;
+  const ignoredCommitCount =
+    comparison.commits.length - developerCommits.length;
   const ignoredParts = [];
   if (merges) {
     ignoredParts.push("merges");
@@ -214,11 +216,27 @@ export function CommitSummary({
 
   const ignoredDescription = ignoredParts.join(", and ");
 
+  const onExpand = useCallback(() => {
+    setExpand((value) => !value);
+  }, [setExpand]);
+
+  const expandToggle = (
+    <Link to="#" onClick={onExpand}>
+      {expand ? "collapse" : "expand"}
+    </Link>
+  );
+
+  // Duplicate the commits to show, so we can reverse the array
+  const visibleCommits =
+    // If we're expanding ignored commits, use original without filtering
+    (expand ? comparison.commits : developerCommits).slice();
+  visibleCommits.reverse();
+
   return (
     <Stack spacing={1}>
       <DeploymentHeadline commits={developerCommits} />
       <ConfigStatus />
-      <CommitTable commits={developerCommits} />
+      <CommitTable commits={visibleCommits} />
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
         <code>{repo.default_branch}</code> (view the{" "}
@@ -229,9 +247,10 @@ export function CommitSummary({
         }
         ):
       </Typography>
-      {hiddenCommitCount > 0 ? (
+      {ignoredCommitCount > 0 ? (
         <Typography variant="caption">
-          {hiddenCommitCount} commits from {ignoredDescription} are hidden.
+          {ignoredCommitCount} commits from {ignoredDescription} are ignored (
+          {expandToggle})
         </Typography>
       ) : null}
       <ConfigStatus showInfo />
