@@ -1,4 +1,3 @@
-import { createContext } from "react";
 import { components } from "@octokit/openapi-types";
 
 export interface OwnerRepo {
@@ -12,3 +11,4 @@ export type Status = components["schemas"]["status"];
 export type User = components["schemas"]["simple-user"];
 export type Repository = components["schemas"]["repository"];
 export type Installation = components["schemas"]["installation"];
+export type Ref = components["schemas"]["git-ref"];

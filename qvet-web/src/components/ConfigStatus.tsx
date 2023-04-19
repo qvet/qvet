@@ -37,23 +37,21 @@ export default function ConfigStatus({ showInfo }: { showInfo?: boolean }) {
   const show =
     parts !== null &&
     (parts.severity === "error" || parts.severity === "warning") === !showInfo;
-  return (
+  return show ? (
     <>
-      <Collapse in={show}>
-        <Alert
-          severity={parts.severity}
-          action={
-            <Button color="inherit" size="small" onClick={onAction}>
-              See Details
-            </Button>
-          }
-        >
-          {parts.text}
-        </Alert>
-      </Collapse>
+      <Alert
+        severity={parts.severity}
+        action={
+          <Button color="inherit" size="small" onClick={onAction}>
+            See Details
+          </Button>
+        }
+      >
+        {parts.text}
+      </Alert>
       <SimpleDialog open={dialogOpen} onClose={onDialogClose} />
     </>
-  );
+  ) : null;
 }
 
 export interface SimpleDialogProps {

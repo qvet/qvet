@@ -18,4 +18,5 @@ export function stateDisplay(state: string): string {
 export interface UpdateState {
   state: WriteableState;
   user: User;
+  description: string | null;
 }
