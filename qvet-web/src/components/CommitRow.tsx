@@ -10,17 +10,26 @@ import { Commit } from "src/octokitHelpers";
 import UserLink from "src/components/UserLink";
 import ShaLink from "src/components/ShaLink";
 import useSetCommitState from "src/hooks/useSetCommitState";
+import { STATUS_CONTEXT_QA } from "src/queries";
 import { grey } from "@mui/material/colors";
 import DisplayState from "src/components/DisplayState";
 import useCommitStatus from "src/hooks/useCommitStatus";
 
 export default function CommitRow({ commit }: { commit: Commit }) {
   const sha = commit.sha;
-  const status = useCommitStatus(sha);
+  const status = useCommitStatus(sha, STATUS_CONTEXT_QA);
 
-  const [approve, setApprove] = useSetCommitState(sha, "success");
-  const [deny, setDeny] = useSetCommitState(sha, "failure");
-  const [clear, setClear] = useSetCommitState(sha, "pending");
+  const [approve, setApprove] = useSetCommitState(
+    sha,
+    "success",
+    STATUS_CONTEXT_QA
+  );
+  const [deny, setDeny] = useSetCommitState(sha, "failure", STATUS_CONTEXT_QA);
+  const [clear, setClear] = useSetCommitState(
+    sha,
+    "pending",
+    STATUS_CONTEXT_QA
+  );
 
   return (
     <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
@@ -31,7 +40,7 @@ export default function CommitRow({ commit }: { commit: Commit }) {
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           overflow: "hidden",
-          maxWidth: "500px",
+          width: "500px",
         }}
       >
         {commit.commit.message.split("\n")[0]}

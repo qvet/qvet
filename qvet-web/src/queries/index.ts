@@ -1,9 +1,10 @@
-const STATUS_CONTEXT = "qvet/qa";
-
 import { Octokit } from "octokit";
 import { ResponseHeaders } from "@octokit/types";
 import { OwnerRepo, Status } from "src/octokitHelpers";
 import { UpdateState, stateDisplay } from "src/utils/status";
+
+export const STATUS_CONTEXT_EMBARGO_PREFIX = "qvet/embargo/";
+export const STATUS_CONTEXT_QA = "qvet/qa";
 
 // Github requests commit statuses be cached for 60s in browser
 // A current value can be found in the `cache-control` header of the github response
@@ -20,11 +21,11 @@ function parseCacheControlMaxAge(headers: ResponseHeaders): number | null {
   return maxAge;
 }
 
-export async function getCommitStatus(
+export async function getCommitStatusList(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
   sha: string
-): Promise<Status | null> {
+): Promise<Array<Status>> {
   const { data, headers } = await octokit.rest.repos.listCommitStatusesForRef({
     ...ownerRepo,
     ref: sha,
@@ -38,8 +39,19 @@ export async function getCommitStatus(
     );
   }
 
-  for (const status of data) {
-    if (status.context === STATUS_CONTEXT) {
+  return data;
+}
+
+export async function getCommitStatus(
+  octokit: Octokit,
+  ownerRepo: OwnerRepo,
+  sha: string,
+  context: string
+): Promise<Status | null> {
+  const statusList = await getCommitStatusList(octokit, ownerRepo, sha);
+  for (const status of statusList) {
+    if (status.context === context) {
+      // First status is the most recent one
       return status;
     }
   }
@@ -54,13 +66,14 @@ export async function setCommitStatus(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
   sha: string,
+  context: string,
   update: UpdateState
 ): Promise<Status> {
-  const description = updateDescription(update);
+  const description = update.description ?? updateDescription(update);
   const { data } = await octokit.rest.repos.createCommitStatus({
     ...ownerRepo,
     sha,
-    context: STATUS_CONTEXT,
+    context,
     state: update.state,
     target_url: window.location.origin,
     description,
