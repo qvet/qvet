@@ -1,26 +1,23 @@
 import "./index.css";
 import React from "react";
-import Container from "@mui/material/Container";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ReactDOM from "react-dom/client";
 import { Home, Oauth2Callback } from "./routes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-
 import CssBaseline from "@mui/material/CssBaseline";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "light",
-  },
-});
+import Theme from "src/components/Theme";
+import PageOptionsOverlay from "src/components/PageOptionsOverlay";
 
 function App() {
   removeUnusedLocalStorageItems();
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Home />,
+      element: (
+        <PageOptionsOverlay>
+          <Home />
+        </PageOptionsOverlay>
+      ),
     },
     {
       path: "/oauth2/callback",
@@ -30,17 +27,15 @@ function App() {
 
   const queryClient = new QueryClient();
   return (
-    <ThemeProvider theme={darkTheme}>
+    <Theme>
       <CssBaseline>
-        <Container maxWidth="lg">
-          <QueryClientProvider client={queryClient}>
-            <React.StrictMode>
-              <RouterProvider router={router} />
-            </React.StrictMode>
-          </QueryClientProvider>
-        </Container>
+        <QueryClientProvider client={queryClient}>
+          <React.StrictMode>
+            <RouterProvider router={router} />
+          </React.StrictMode>
+        </QueryClientProvider>
       </CssBaseline>
-    </ThemeProvider>
+    </Theme>
   );
 }
 
