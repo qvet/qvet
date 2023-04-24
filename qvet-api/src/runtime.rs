@@ -3,6 +3,7 @@ use anyhow::{anyhow, Context, Result};
 use axum_extra::extract::cookie::Key;
 use clap::Parser;
 use oauth2::basic::BasicClient;
+use std::net::SocketAddr;
 
 pub fn init_logging() {
     tracing_subscriber::fmt().with_ansi(false).init();
@@ -12,7 +13,7 @@ pub fn init_logging() {
 #[derive(Parser)]
 pub struct Args {
     #[arg(long)]
-    pub bind: std::net::SocketAddr,
+    pub bind: Option<SocketAddr>,
 }
 
 pub fn parse_args() -> Args {
@@ -56,5 +57,22 @@ pub fn error_report(result: Result<()>) {
         for error in error.chain() {
             tracing::error!("--> {}", error);
         }
+    }
+}
+
+fn bind_from_env() -> Result<SocketAddr> {
+    let mut bind: SocketAddr = "0.0.0.0:3000".parse().expect("invalid default bind");
+    if let Ok(port) = std::env::var("PORT") {
+        let port = port.parse().context("PORT was not a valid port number")?;
+        bind.set_port(port);
+    }
+    Ok(bind)
+}
+
+pub fn bind_env_fallback(bind: Option<SocketAddr>) -> Result<SocketAddr> {
+    if let Some(bind) = bind {
+        Ok(bind)
+    } else {
+        bind_from_env()
     }
 }
