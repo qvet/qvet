@@ -7,9 +7,11 @@ export const ColorModeContext = React.createContext({
 
 type ThemeMode = "light" | "dark";
 
+const systemIsDarkTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 export default function Theme({ children }: { children: React.ReactNode }) {
   const storedMode = (localStorage.getItem("theme_mode") ??
-    "light") as ThemeMode;
+    systemIsDarkTheme ?  "dark" : "light") as ThemeMode;
   const [mode, setMode] = React.useState<ThemeMode>(storedMode);
   const colorMode = React.useMemo(
     () => ({
