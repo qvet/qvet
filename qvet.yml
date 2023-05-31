@@ -1,3 +1,7 @@
+commit:
+  ignore:
+    merges: true
+
 release:
   identifiers:
     - type: tag
