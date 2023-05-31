@@ -10,6 +10,8 @@
 
 ## Overview
 
+![qvet homepage screenshot](./img/qvet_qvet_demo.png)
+
 `qvet` has two main components:
 
 - `web`: The shiny dashboard UI. Most functionality is here.
