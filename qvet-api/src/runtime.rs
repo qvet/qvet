@@ -2,6 +2,7 @@ use crate::redacted::Redacted;
 use anyhow::{anyhow, Context, Result};
 use axum_extra::extract::cookie::Key;
 use clap::Parser;
+use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use std::net::SocketAddr;
 
@@ -25,6 +26,8 @@ pub struct State {
 }
 
 pub fn github_credentials_from_env() -> Result<(String, String)> {
+    dotenv().ok();
+
     Ok((
         std::env::var("GITHUB_CLIENT_ID").context("github client id")?,
         std::env::var("GITHUB_CLIENT_SECRET").context("github client secret")?,
