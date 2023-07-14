@@ -83,12 +83,23 @@ const SCHEMA_RELEASE = {
   additionalProperties: false,
 };
 
+const SCHEMA_TEAM = {
+  type: "object",
+  properties: {
+    org: { type: "string", maxLength: 128 },
+    team_slug: { type: "string", maxLength: 128 },
+  },
+  required: ["org", "team_slug"],
+  additionalProperties: false,
+};
+
 const SCHEMA = {
   type: "object",
   properties: {
     action: SCHEMA_ACTION_LOOKUP,
     commit: SCHEMA_COMMIT,
     release: SCHEMA_RELEASE,
+    team: SCHEMA_TEAM,
   },
   required: [],
   additionalProperties: false,
@@ -107,6 +118,7 @@ export interface Config {
   release: {
     identifiers: Array<Identifier>;
   };
+  team: Team | null;
 }
 
 export interface ActionLink {
@@ -115,6 +127,11 @@ export interface ActionLink {
   url: string;
 }
 export type Action = ActionLink;
+
+export interface Team {
+  org: string;
+  team_slug: string;
+}
 
 export interface IdentifierTag {
   type: "tag";
@@ -134,6 +151,7 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
 
   const errorsText = valid ? null : ajv.errorsText(validator.errors);
   const config = valid ? standardiseConfig(raw) : standardiseConfig({});
+  console.log(config);
 
   return { config, errorsText };
 }
@@ -157,5 +175,6 @@ function standardiseConfig(raw: any): Config {
         },
       ],
     },
+    team: raw.team ?? null,
   };
 }

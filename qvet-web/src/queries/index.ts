@@ -1,6 +1,6 @@
 import { Octokit } from "octokit";
 import { ResponseHeaders } from "@octokit/types";
-import { OwnerRepo, Status } from "src/octokitHelpers";
+import { OwnerRepo, Status, User, Team } from "src/octokitHelpers";
 import { UpdateState, stateDisplay } from "src/utils/status";
 
 export const STATUS_CONTEXT_EMBARGO_PREFIX = "qvet/embargo/";
@@ -80,3 +80,13 @@ export async function setCommitStatus(
   });
   return data;
 }
+
+
+export async function getTeamMembers(
+  octokit: Octokit,
+  team: Team,
+): Promise<Array<User>> {
+  const { data } = await octokit.rest.teams.listMembersInOrg({...team});
+  return data;
+}
+

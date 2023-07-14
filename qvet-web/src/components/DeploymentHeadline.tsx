@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
-import { Commit, Status } from "src/octokitHelpers";
+import { Commit, Status, User } from "src/octokitHelpers";
 import {
   commitStatusQuery,
   useCommitStatusList,
@@ -21,6 +21,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { useCallback } from "react";
 import UserLink from "src/components/UserLink";
 import RelativeTime from "src/components/RelativeTime";
+import useTeamMembers from "src/hooks/useTeamMembers";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
   const octokit = useOctokit();
@@ -80,6 +81,49 @@ function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
   );
 }
 
+function selectUsers<T>(array: Array<T>) {
+  // Optimally randomly select a set of max 3 users
+  const finalArraySize = Math.min(array.length, 3);
+  array = array.slice();
+  for (let i = 0; i < finalArraySize; i++) {
+    const j = Math.floor(i + Math.random() * (array.length - i));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  array.length = finalArraySize;
+  return array;
+}
+
+interface DeploymentUsersProps {
+  commits: Array<Commit>,
+}
+
+function DeploymentUsers({ commits }: DeploymentUsersProps) {
+  const allUsers = useTeamMembers();
+  if (allUsers.isLoading || allUsers.isError) return null;
+
+  const userIdsWithCommits = new Set(commits.map((commit) =>
+    commit.author?.id
+  ).filter((id) => id !== undefined));
+  const usersWithoutCommits = allUsers.data.filter((user) => !userIdsWithCommits.has(user.id));
+
+  if (usersWithoutCommits.length == 0) return (
+    <Typography>
+      All team members have a commit to be deployed, please ask the support-dev to do an emergency deployment
+    </Typography>
+  );
+
+  const luckyUsers = selectUsers(usersWithoutCommits);
+  const userSingularOrPlural = luckyUsers.length > 1 ? "users" : "user";
+  return (
+    <Typography>
+      The following randomly selected {userSingularOrPlural} can deploy:
+      <Stack style={{ padding: "0.5em", columnGap: "1em" }} spacing={1} direction="row">
+        {luckyUsers.map((user) => <UserLink user={user} />)}
+      </Stack>
+    </Typography>
+  )
+};
+
 export default function DeploymentHeadline({
   commits,
   baseSha,
@@ -115,6 +159,7 @@ export default function DeploymentHeadline({
         action={!!action ? <ReadyAction action={action} /> : null}
       >
         Ready to Deploy
+        <DeploymentUsers commits={commits} />
       </Alert>
     );
     alerts.push(readyAlert);
