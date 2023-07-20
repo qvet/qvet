@@ -140,6 +140,16 @@ pub async fn access_token(State(state): State<SharedState>, jar: PrivateCookieJa
         .into_response()
 }
 
+pub async fn logout(mut jar: PrivateCookieJar) -> Response {
+    tracing::info!("Logout");
+    let refresh_token = jar.get(COOKIE_KEY_NAME_REFRESH_TOKEN);
+    if let Some(refresh_token) = refresh_token {
+        jar = jar.remove(refresh_token);
+    }
+
+    (StatusCode::OK, jar).into_response()
+}
+
 pub fn set_refresh_token_cookie(
     jar: PrivateCookieJar,
     token_result: &StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,

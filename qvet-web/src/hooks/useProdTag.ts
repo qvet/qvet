@@ -33,15 +33,15 @@ interface Tag {
 async function getProdTag(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
-  config: Config
+  config: Config,
 ): Promise<Tag | null> {
   const tagPages = octokit.paginate.iterator(octokit.rest.repos.listTags, {
     ...ownerRepo,
     per_page: 100,
   });
 
-  const regexes = config.release.identifiers.map(
-    (identifier) => new RegExp(identifier.pattern)
+  const regexes: Array<RegExp> = config.release.identifiers.map(
+    (identifier) => new RegExp(identifier.pattern),
   );
 
   let page = 0;
