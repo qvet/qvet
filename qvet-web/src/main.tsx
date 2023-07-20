@@ -6,7 +6,7 @@ import { Home, Oauth2Callback } from "./routes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CssBaseline from "@mui/material/CssBaseline";
 import Theme from "src/components/Theme";
-import PageOptionsOverlay from "src/components/PageOptionsOverlay";
+import Shell from "src/components/Shell";
 
 function App() {
   removeUnusedLocalStorageItems();
@@ -14,9 +14,9 @@ function App() {
     {
       path: "/",
       element: (
-        <PageOptionsOverlay>
+        <Shell>
           <Home />
-        </PageOptionsOverlay>
+        </Shell>
       ),
     },
     {

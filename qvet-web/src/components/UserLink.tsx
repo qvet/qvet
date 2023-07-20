@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { User } from "src/octokitHelpers";
-import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
+import UserAvatar from "src/components/UserAvatar";
 
 interface UserLinkProps {
   user: User;
@@ -19,7 +19,7 @@ export default function UserLink({ user, inline }: UserLinkProps) {
   }
   return (
     <Stack direction="row" spacing={1} alignItems="center">
-      <Avatar alt={user.login} src={user.avatar_url} />
+      <UserAvatar user={user} />
       {link}
     </Stack>
   );

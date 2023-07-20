@@ -43,6 +43,7 @@ pub fn api_app(oauth2_client: BasicClient, cookie_key: Key) -> Router {
         .route("/oauth2/access-token", post(oauth_handler::access_token))
         .route("/oauth2/initiate", post(oauth_handler::oauth2_initiate))
         .route("/oauth2/callback", post(oauth_handler::oauth2_callback))
+        .route("/oauth2/logout", post(oauth_handler::logout))
         .with_state(state)
         .layer(
             TraceLayer::new_for_http().on_response(
