@@ -5,6 +5,11 @@ export interface OwnerRepo {
   repo: string;
 }
 
+export interface Team {
+  org: string;
+  team_slug: string;
+}
+
 export type Commit = components["schemas"]["commit"];
 export type CommitComparison = components["schemas"]["commit-comparison"];
 export type Status = components["schemas"]["status"];
