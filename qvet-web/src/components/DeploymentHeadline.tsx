@@ -13,7 +13,6 @@ import { Action } from "src/utils/config";
 import useOctokit from "src/hooks/useOctokit";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
-import Collapse from "@mui/material/Collapse";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -99,7 +98,7 @@ interface DeploymentUsersProps {
 
 function DeploymentUsers({ commits }: DeploymentUsersProps) {
   const allUsers = useTeamMembers();
-  if (allUsers.isLoading || allUsers.isError) return null;
+  if (allUsers.isLoading || allUsers.isError || allUsers.data === null) return null;
 
   const userIdsWithCommits = new Set(commits.map((commit) =>
     commit.author?.id

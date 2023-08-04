@@ -12,7 +12,7 @@ export function teamMembersQuery(
   return {
     queryKey: ["getTeamMembers", { team: config.data }],
     queryFn: () => {
-      const users = config.data!.team ? getTeamMembers(octokit!, config.data!.team) : [];
+      const users = config.data!.team ? getTeamMembers(octokit!, config.data!.team) : null;
       return users
     },
     enabled: !!octokit && !!config.data,
