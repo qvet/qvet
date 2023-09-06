@@ -6,21 +6,21 @@ import { Config } from "src/utils/config";
 import { useRepo } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
 
-export default function useMasterSha() {
+export default function useBaseSha() {
   const octokit = useOctokit();
   const repo = useRepo();
   const config = useConfig();
 
   return useQuery({
-    queryKey: ["getMasterSha", { ownerRepo: repo.data, config: config.data }],
-    queryFn: () => getMasterSha(octokit!, repo.data!, config.data!),
+    queryKey: ["getBaseSha", { ownerRepo: repo.data, config: config.data }],
+    queryFn: () => getBaseSha(octokit!, repo.data!, config.data!),
     refetchInterval: GIT_REF_POLL_INTERVAL_MS,
     staleTime: GIT_REF_POLL_INTERVAL_MS,
     enabled: !!octokit && !!repo.data && !!config.data,
   });
 }
 
-async function getMasterSha(
+async function getBaseSha(
   octokit: Octokit,
   repo: Repository,
   config: Config,

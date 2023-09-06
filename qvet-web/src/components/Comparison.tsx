@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import CommitSummary from "src/components/CommitSummary";
 import useOctokit from "src/hooks/useOctokit";
 import useConfig from "src/hooks/useConfig";
-import useMasterSha from "src/hooks/useMasterSha";
+import useBaseSha from "src/hooks/useBaseSha";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useProdTag from "src/hooks/useProdTag";
 import Stack from "@mui/material/Stack";
@@ -17,7 +17,7 @@ import Skeleton from "@mui/material/Skeleton";
 export default function Comparison({ repo }: { repo: Repository }) {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
-  const masterSha = useMasterSha();
+  const baseSha = useBaseSha();
   const prodTag = useProdTag();
   const config = useConfig();
 
@@ -26,7 +26,7 @@ export default function Comparison({ repo }: { repo: Repository }) {
       "getComparison",
       {
         ownerRepo: ownerRepo.data,
-        masterSha: masterSha.data,
+        baseSha: baseSha.data,
         prodSha: prodTag.data?.commit.sha,
       },
     ],
@@ -34,11 +34,10 @@ export default function Comparison({ repo }: { repo: Repository }) {
       getCommitComparison(
         octokit!,
         ownerRepo.data!,
-        masterSha.data!,
+        baseSha.data!,
         prodTag.data!.commit.sha
       ),
-    enabled:
-      !!octokit && !!ownerRepo.data && !!masterSha.data && !!prodTag.data,
+    enabled: !!octokit && !!ownerRepo.data && !!baseSha.data && !!prodTag.data,
     // default branch should not be rewritten, this will not go out of date
     // unless the refs are updated
     staleTime: Infinity,
@@ -79,12 +78,12 @@ export default function Comparison({ repo }: { repo: Repository }) {
 async function getCommitComparison(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
-  masterSha: string,
+  baseSha: string,
   prodSha: string
 ): Promise<CommitComparison> {
   const comparison = await octokit.request(
     "GET /repos/{owner}/{repo}/compare/{basehead}",
-    { ...ownerRepo, basehead: `${prodSha}...${masterSha}` }
+    { ...ownerRepo, basehead: `${prodSha}...${baseSha}` }
   );
   return comparison.data;
 }
