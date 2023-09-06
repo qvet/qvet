@@ -33,12 +33,11 @@ export default function Theme({ children }: { children: React.ReactNode }) {
         });
       },
     }),
-    []
+    [],
   );
 
   const baseTheme = React.useMemo(() => createTheme(), [createTheme]);
   const gradientButtonOverrides = makeGradientButtonOverrides(baseTheme);
-  console.log(gradientButtonOverrides);
   const theme = React.useMemo(
     () =>
       createTheme({
@@ -53,7 +52,7 @@ export default function Theme({ children }: { children: React.ReactNode }) {
           },
         },
       }),
-    [mode]
+    [mode],
   );
 
   return (
@@ -64,7 +63,7 @@ export default function Theme({ children }: { children: React.ReactNode }) {
 }
 
 function assertPaletteColor(
-  paletteColor: any
+  paletteColor: any,
 ): asserts paletteColor is PaletteColor {
   if (paletteColor.main === undefined) {
     throw new Error("assertPaletteColor");
