@@ -153,7 +153,6 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
 
   const errorsText = valid ? null : ajv.errorsText(validator.errors);
   const config = valid ? standardiseConfig(raw) : standardiseConfig({});
-  console.log(config);
 
   return { config, errorsText };
 }
