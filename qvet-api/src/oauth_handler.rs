@@ -117,7 +117,7 @@ pub async fn access_token(State(state): State<SharedState>, jar: PrivateCookieJa
     tracing::info!("New access token requested");
     let refresh_token = jar.get(COOKIE_KEY_NAME_REFRESH_TOKEN);
     let Some(refresh_token) = refresh_token else {
-        return StatusCode::UNAUTHORIZED.into_response()
+        return StatusCode::UNAUTHORIZED.into_response();
     };
 
     let refresh_token = RefreshToken::new(refresh_token.value().to_owned());
