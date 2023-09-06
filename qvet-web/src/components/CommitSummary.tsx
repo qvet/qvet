@@ -27,6 +27,9 @@ export default function CommitSummary({
 
   const authorLogins = config.commit.ignore.authors;
   const merges = config.commit.ignore.merges;
+  const base_branch = config.commit.base
+    ? config.commit.base
+    : repo.default_branch;
   const developerCommits = comparison.commits.filter((commit) => {
     // Is a merge (and we don't want merges)
     if (merges && commit.parents.length > 1) {
@@ -96,7 +99,7 @@ export default function CommitSummary({
       <CommitTable commits={visibleCommits} />
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
-        <code>{repo.default_branch}</code> (view the{" "}
+        <code>{base_branch}</code> (view the{" "}
         {
           <Link target="_blank" to={comparison.html_url}>
             Github comparison

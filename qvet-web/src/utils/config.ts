@@ -27,6 +27,7 @@ const SCHEMA_COMMIT = {
   type: "object",
   properties: {
     ignore: SCHEMA_COMMIT_IGNORE,
+    base: { type: "string", minLength: 1, maxLength: 128 },
   },
   required: [],
   additionalProperties: false,
@@ -114,6 +115,7 @@ export interface Config {
       authors: Array<string>;
       merges: boolean;
     };
+    base: string | null;
   };
   release: {
     identifiers: Array<Identifier>;
@@ -166,6 +168,7 @@ function standardiseConfig(raw: any): Config {
         authors: raw.commit?.ignore?.authors ?? [],
         merges: raw.commit?.ignore?.merges ?? false,
       },
+      base: raw.commit?.base ?? null,
     },
     release: {
       identifiers: raw.release?.identifiers ?? [
