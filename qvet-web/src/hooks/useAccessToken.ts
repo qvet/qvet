@@ -1,10 +1,10 @@
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import ky from "ky";
-import { useQuery } from "@tanstack/react-query";
 
 // 30 minutes
 const ACCESS_TOKEN_POLL_INTERVAL_MS = 30 * 60 * 1000;
 
-export default function useAccessToken() {
+export default function useAccessToken(): UseQueryResult<string> {
   return useQuery({
     queryKey: ["getAccessToken"],
     queryFn: () => getAccessToken(),

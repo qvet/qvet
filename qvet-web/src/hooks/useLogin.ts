@@ -1,7 +1,8 @@
-import { Octokit } from "octokit";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import useOctokit from "src/hooks/useOctokit";
+import { Octokit } from "octokit";
+
 import useAccessToken from "src/hooks/useAccessToken";
+import useOctokit from "src/hooks/useOctokit";
 import { User } from "src/octokitHelpers";
 
 /**

@@ -1,9 +1,10 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { HTTPError } from "ky";
 import { Octokit } from "octokit";
+
 import useOctokit from "src/hooks/useOctokit";
 import { useRepo } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
-import { HTTPError } from "ky";
 
 function retry(failureCount: number, error: HTTPError): boolean {
   return error.response.status === 404
@@ -30,7 +31,7 @@ export default function useConfigFile(): UseQueryResult<string, HTTPError> {
 
 async function getConfigFileContents(
   octokit: Octokit,
-  repo: Repository
+  repo: Repository,
 ): Promise<string> {
   // Cast to this type, as it can vary based on media type
   const response = (await octokit.rest.repos.getContent({

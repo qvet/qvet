@@ -1,14 +1,15 @@
-import { useCallback, useMemo } from "react";
+import AddIcon from "@mui/icons-material/Add";
 import Alert from "@mui/material/Alert";
-import Skeleton from "@mui/material/Skeleton";
-import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import { useCallback, useMemo } from "react";
+
 import { useRepos } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import AddIcon from "@mui/icons-material/Add";
 
 interface Option {
   label: string;
@@ -19,12 +20,12 @@ function repoToOption(repo: Repository): Option {
   return { label: repo.full_name, id: repo.id };
 }
 
-export default function RepoSelect() {
+export default function RepoSelect(): React.ReactElement {
   // FIXME we always know this in advance, could be props here
   const { currentRepo, visibleRepos, setSelectedRepo } = useRepos();
 
   let options: Array<{ label: string; id: number }> = [];
-  if (!!visibleRepos.data) {
+  if (visibleRepos.data) {
     options = visibleRepos.data.map(repoToOption);
   }
 
@@ -34,7 +35,7 @@ export default function RepoSelect() {
         setSelectedRepo(newValue.id);
       }
     },
-    [setSelectedRepo]
+    [setSelectedRepo],
   );
 
   const value = useMemo((): Option | undefined => {
@@ -65,8 +66,7 @@ export default function RepoSelect() {
         <IconButton
           aria-label="add repository"
           target="_blane"
-          href="https://github.com/apps/qvet"
-        >
+          href="https://github.com/apps/qvet">
           <AddIcon />
         </IconButton>
       </Box>

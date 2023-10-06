@@ -1,5 +1,6 @@
 import { Octokit } from "octokit";
 import { useMemo } from "react";
+
 import useAccessToken from "src/hooks/useAccessToken";
 
 /**
@@ -12,11 +13,11 @@ export default function useOctokit(): Octokit | null {
 
   return useMemo(
     () =>
-      !!accessToken
+      accessToken
         ? new Octokit({
             auth: accessToken,
           })
         : null,
-    [accessToken]
+    [accessToken],
   );
 }

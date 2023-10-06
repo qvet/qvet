@@ -1,7 +1,8 @@
 import Button from "@mui/material/Button";
+
 import useLoginRedirect from "src/hooks/useLoginRedirect";
 
-export default function LoginButton() {
+export default function LoginButton(): React.ReactElement {
   const loginRedirect = useLoginRedirect();
 
   return (

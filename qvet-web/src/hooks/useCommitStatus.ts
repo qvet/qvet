@@ -1,9 +1,10 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { getCommitStatus, getCommitStatusList } from "src/queries";
-import useOwnerRepo from "src/hooks/useOwnerRepo";
-import useOctokit from "src/hooks/useOctokit";
 import { Octokit } from "octokit";
+
+import useOctokit from "src/hooks/useOctokit";
+import useOwnerRepo from "src/hooks/useOwnerRepo";
 import { OwnerRepo, Status } from "src/octokitHelpers";
+import { getCommitStatus, getCommitStatusList } from "src/queries";
 import {
   COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S,
   STATUS_CONTEXT_EMBARGO_PREFIX,
@@ -19,8 +20,8 @@ export function commitStatusQuery(
   octokit: Octokit | null,
   ownerRepo: UseQueryResult<OwnerRepo | null>,
   sha: string,
-  context: string
-) {
+  context: string,
+): object {
   return {
     queryKey: ["getCommitStatus", { ownerRepo: ownerRepo.data, sha, context }],
     queryFn: () => getCommitStatus(octokit!, ownerRepo.data!, sha, context),
@@ -38,13 +39,13 @@ export interface Embargo {
 
 export function embargoListFromStatusList(
   sha: string,
-  commitStatusList: Array<Status>
+  commitStatusList: Array<Status>,
 ): Array<Embargo> {
   const ids = new Set();
   const embargoes: Array<Embargo> = [];
   commitStatusList.forEach((commitStatus) => {
     const isEmbargo = commitStatus.context.startsWith(
-      STATUS_CONTEXT_EMBARGO_PREFIX
+      STATUS_CONTEXT_EMBARGO_PREFIX,
     );
     const id = commitStatus.context.slice(STATUS_CONTEXT_EMBARGO_PREFIX.length);
     const mostRecent = !ids.has(id);
@@ -62,7 +63,9 @@ export function embargoListFromStatusList(
   return embargoes;
 }
 
-export function useCommitStatusList(sha: string) {
+export function useCommitStatusList(
+  sha: string,
+): UseQueryResult<Array<Status>> {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   return useQuery({
@@ -76,7 +79,10 @@ export function useCommitStatusList(sha: string) {
   });
 }
 
-export default function useCommitStatus(sha: string, context: string) {
+export default function useCommitStatus(
+  sha: string,
+  context: string,
+): UseQueryResult<Status | null> {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   return useQuery(commitStatusQuery(octokit, ownerRepo, sha, context));

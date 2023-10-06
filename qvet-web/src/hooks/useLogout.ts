@@ -1,12 +1,14 @@
-import ky from "ky";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import ky from "ky";
 
 export default function useLogout(): [
   UseMutationResult<unknown, unknown, void>,
   () => void,
 ] {
-  const setLogout = useMutation(logout, {
-    onSuccess: async (data) => {
+  const setLogout = useMutation({
+    mutationFn: logout,
+    onSuccess: async (_data) => {
+      // eslint-disable-next-line no-self-assign
       window.location.href = window.location.href;
     },
   });

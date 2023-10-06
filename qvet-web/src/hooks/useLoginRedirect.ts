@@ -1,5 +1,6 @@
-import { useCallback } from "react";
 import ky from "ky";
+import { useCallback } from "react";
+
 import { LOCAL_STORAGE_KEYS } from "src/constants";
 
 interface Oauth2InitiateRequest {
@@ -10,7 +11,7 @@ interface Oauth2InitiateResponse {
   redirect_url: string;
   internal_state: string;
 }
-export default function useLoginRedirect() {
+export default function useLoginRedirect(): () => void {
   return useCallback(async () => {
     const body: Oauth2InitiateRequest = {
       redirect_origin: window.location.origin,
@@ -20,7 +21,7 @@ export default function useLoginRedirect() {
       .json();
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.oauthFlowInternalState,
-      response.internal_state
+      response.internal_state,
     );
     window.location.href = response.redirect_url;
   }, []);

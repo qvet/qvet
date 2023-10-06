@@ -1,7 +1,8 @@
 import { useQuery, useQueries, UseQueryResult } from "@tanstack/react-query";
 import { Octokit } from "octokit";
-import useOctokit from "src/hooks/useOctokit";
+
 import useLogin from "src/hooks/useLogin";
+import useOctokit from "src/hooks/useOctokit";
 import useStore from "src/hooks/useStore";
 import { OwnerRepo, Repository, Installation } from "src/octokitHelpers";
 
@@ -54,7 +55,7 @@ export function useRepos(): {
 
 function lookupRepository(
   selectedRepo: number | null,
-  repos: Array<Repository>
+  repos: Array<Repository>,
 ) {
   if (selectedRepo === null) {
     if (repos.length > 0) {
@@ -91,7 +92,7 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
       enabled: !!octokit,
     })),
   });
-  const allInstallationRepos = useQuery({
+  return useQuery({
     queryKey: [
       "allInstallationRepos",
       { items: installationRepoQueries.map((query) => query.data) },
@@ -108,8 +109,6 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
       installations.isSuccess &&
       installationRepoQueries.every((query) => query.isSuccess),
   });
-
-  return allInstallationRepos;
 }
 
 /**
@@ -124,7 +123,7 @@ export function useVisibleRepos(): UseQueryResult<Array<Repository>> {
  *
  */
 async function listInstallations(
-  octokit: Octokit
+  octokit: Octokit,
 ): Promise<Array<Installation>> {
   // FIXME pagination here
   const response =
@@ -137,7 +136,7 @@ async function listInstallations(
  */
 async function listInstallationRepos(
   octokit: Octokit,
-  installationId: number
+  installationId: number,
 ): Promise<Array<Repository>> {
   // FIXME pagination here
   const response =

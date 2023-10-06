@@ -1,23 +1,21 @@
-import * as React from "react";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
+import Logout from "@mui/icons-material/Logout";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import Skeleton from "@mui/material/Skeleton";
 import Typography from "@mui/material/Typography";
-import PersonAdd from "@mui/icons-material/PersonAdd";
-import Settings from "@mui/icons-material/Settings";
-import Logout from "@mui/icons-material/Logout";
+import * as React from "react";
+
 import ThemeModeToggle from "src/components/ThemeModeToggle";
 import UserAvatar from "src/components/UserAvatar";
 import UserLink from "src/components/UserLink";
-import { User } from "src/octokitHelpers";
 import useLogin from "src/hooks/useLogin";
 import useLogout from "src/hooks/useLogout";
 
-export default function AccountMenu() {
-  let login = useLogin();
+export default function AccountMenu(): React.ReactElement {
+  const login = useLogin();
 
   const userAvatar = login.isLoading ? (
     <Skeleton animation="wave" variant="circular" width={40} height={40} />
@@ -36,7 +34,7 @@ export default function AccountMenu() {
     </Typography>
   );
 
-  const [logout, setLogout] = useLogout();
+  const [_logout, setLogout] = useLogout();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {

@@ -9,7 +9,7 @@ const VERSION_POLL_INTERVAL_MS = 3_600_000;
  */
 export default function useVersions(): [
   UseQueryResult<string, Error>,
-  UseQueryResult<string, Error>
+  UseQueryResult<string, Error>,
 ] {
   return [
     useQuery({

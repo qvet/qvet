@@ -1,14 +1,15 @@
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import { useEffect } from "react";
+
 import Installations from "src/components/Installations";
 import LoginButton from "src/components/LoginButton";
 import VersionUpdate from "src/components/VersionUpdate";
-import useLoginRedirect from "src/hooks/useLoginRedirect";
-import useAccessToken from "src/hooks/useAccessToken";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
 import { LOCAL_STORAGE_KEYS } from "src/constants";
+import useAccessToken from "src/hooks/useAccessToken";
+import useLoginRedirect from "src/hooks/useLoginRedirect";
 
-export function Home() {
+export function Home(): React.ReactElement {
   const accessToken = useAccessToken();
   const loginRedirect = useLoginRedirect();
   const oauthFlowInFlight = !!localStorage.getItem(
@@ -19,7 +20,7 @@ export function Home() {
     if (accessToken.isError && !oauthFlowInFlight) {
       loginRedirect();
     }
-  }, [accessToken]);
+  }, [accessToken, loginRedirect, oauthFlowInFlight]);
 
   return (
     <Box style={{ width: "100%", padding: "8px" }}>

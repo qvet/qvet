@@ -24,7 +24,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:react-hooks/recommended",
     "plugin:@tanstack/eslint-plugin-query/recommended",
-    "plugin:sonarjs/recommended"
+    "plugin:sonarjs/recommended",
   ],
   rules: {
     // Enabled
@@ -90,7 +90,7 @@ module.exports = {
           },
           {
             pattern: "assets/**",
-            group: "internal"
+            group: "internal",
           },
           {
             pattern: "src/**",
@@ -158,8 +158,14 @@ module.exports = {
     "react/display-name": "off",
     "react/no-unescaped-entities": "off",
     "react/prop-types": "off",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
     "sonarjs/cognitive-complexity": "off", // turning this off as it causes too many issues for the time being (mainly due to reducers)
     "sonarjs/no-duplicate-string": "off", // turning this off as it doesn't make sense in our situation
+    // Currently we don't want to pass octokit into a bunch of keys
+    // feels like something we could fix by wrapping in a stable client
+    // with interior mutability
+    "@tanstack/query/exhaustive-deps": "off",
   },
   overrides: [
     {

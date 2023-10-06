@@ -1,16 +1,17 @@
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Collapse from "@mui/material/Collapse";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+
+import AddEmbargoDialog from "src/components/AddEmbargoDialog";
 import CommitTable from "src/components/CommitTable";
 import ConfigStatus from "src/components/ConfigStatus";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
-import AddEmbargoDialog from "src/components/AddEmbargoDialog";
-import { Config } from "src/utils/config";
-import Stack from "@mui/material/Stack";
 import { CommitComparison, Repository } from "src/octokitHelpers";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Collapse from "@mui/material/Collapse";
-import Box from "@mui/material/Box";
+import { Config } from "src/utils/config";
 
 interface CommitSummaryProps {
   comparison: CommitComparison;
@@ -22,7 +23,7 @@ export default function CommitSummary({
   comparison,
   config,
   repo,
-}: CommitSummaryProps) {
+}: CommitSummaryProps): React.ReactElement {
   const [expand, setExpand] = useState<boolean>(false);
 
   const authorLogins = config.commit.ignore.authors;
@@ -37,12 +38,9 @@ export default function CommitSummary({
     }
 
     // Author is in the ignore list
-    if (
-      authorLogins.some((ignoredLogin) => ignoredLogin === commit.author?.login)
-    ) {
-      return false;
-    }
-    return true;
+    return !authorLogins.some(
+      (ignoredLogin) => ignoredLogin === commit.author?.login,
+    );
   });
   const ignoredCommitCount =
     comparison.commits.length - developerCommits.length;
@@ -52,7 +50,7 @@ export default function CommitSummary({
   }
   if (authorLogins.length > 0) {
     ignoredParts.push(
-      `author${authorLogins.length > 1 ? "s" : ""} ${authorLogins.join(", ")}`
+      `author${authorLogins.length > 1 ? "s" : ""} ${authorLogins.join(", ")}`,
     );
   }
 
@@ -139,8 +137,7 @@ function RepoActions({ baseSha }: { baseSha: string }) {
         component="label"
         onClick={handleOpen}
         size="small"
-        variant="outlined"
-      >
+        variant="outlined">
         Add Embargo
       </Button>
     </div>

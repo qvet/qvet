@@ -1,12 +1,13 @@
-import { useCallback } from "react";
 import Alert from "@mui/material/Alert";
-import Collapse from "@mui/material/Collapse";
 import Button from "@mui/material/Button";
-import useVersions from "src/hooks/useVersions";
+import Collapse from "@mui/material/Collapse";
 import ky from "ky";
+import { useCallback } from "react";
 
-export default function VersionUpdate() {
-  let [localVersion, serverVersion] = useVersions();
+import useVersions from "src/hooks/useVersions";
+
+export default function VersionUpdate(): React.ReactElement {
+  const [localVersion, serverVersion] = useVersions();
 
   const doUpdate = useCallback(async () => {
     // Bust cache on the app entrypoint we know about
@@ -40,8 +41,7 @@ export default function VersionUpdate() {
           <Button color="inherit" size="small" onClick={doUpdate}>
             Update
           </Button>
-        }
-      >
+        }>
         New version avaiable
       </Alert>
     </Collapse>

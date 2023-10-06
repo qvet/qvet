@@ -1,13 +1,14 @@
-import DoneIcon from "@mui/icons-material/Done";
-import CloseIcon from "@mui/icons-material/Close";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import DoneIcon from "@mui/icons-material/Done";
+
 import UserLink from "src/components/UserLink";
-import { stateDisplay } from "src/utils/status";
 import { Status } from "src/octokitHelpers";
+import { stateDisplay } from "src/utils/status";
 
 function nullableStatusDisplay(status: Status | null): {
   text: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
 } {
   const pending = {
     text: "Pending",
@@ -41,7 +42,11 @@ function nullableStatusDisplay(status: Status | null): {
   }
 }
 
-export default function DisplayState({ status }: { status: Status | null }) {
+export default function DisplayState({
+  status,
+}: {
+  status: Status | null;
+}): React.ReactElement {
   const { text, icon } = nullableStatusDisplay(status);
 
   return (
