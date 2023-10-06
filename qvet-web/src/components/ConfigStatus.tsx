@@ -1,19 +1,23 @@
+import Alert, { AlertColor } from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
 import { useState, useCallback } from "react";
-import Alert, { AlertColor } from "@mui/material/Alert";
-import Collapse from "@mui/material/Collapse";
-import { useConfigMeta } from "src/hooks/useConfig";
+
 import ConfigFile from "src/components/ConfigFile";
+import { useConfigMeta } from "src/hooks/useConfig";
 
 interface Parts {
   text: string;
   severity: AlertColor;
 }
 
-export default function ConfigStatus({ showInfo }: { showInfo?: boolean }) {
+export default function ConfigStatus({
+  showInfo,
+}: {
+  showInfo?: boolean;
+}): React.ReactElement | null {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const configMeta = useConfigMeta();
   const parts: Parts = configMeta.isError
@@ -45,8 +49,7 @@ export default function ConfigStatus({ showInfo }: { showInfo?: boolean }) {
           <Button color="inherit" size="small" onClick={onAction}>
             See Details
           </Button>
-        }
-      >
+        }>
         {parts.text}
       </Alert>
       <SimpleDialog open={dialogOpen} onClose={onDialogClose} />

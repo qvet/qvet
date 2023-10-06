@@ -1,5 +1,6 @@
-import { Octokit } from "octokit";
 import { ResponseHeaders } from "@octokit/types";
+import { Octokit } from "octokit";
+
 import { OwnerRepo, Status, User, Team } from "src/octokitHelpers";
 import { UpdateState, stateDisplay } from "src/utils/status";
 
@@ -17,14 +18,13 @@ function parseCacheControlMaxAge(headers: ResponseHeaders): number | null {
   }
 
   const matches = cacheControl.match(/max-age=(\d+)/);
-  const maxAge = matches ? parseInt(matches[1], 10) : null;
-  return maxAge;
+  return matches ? parseInt(matches[1], 10) : null;
 }
 
 export async function getCommitStatusList(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
-  sha: string
+  sha: string,
 ): Promise<Array<Status>> {
   const { data, headers } = await octokit.rest.repos.listCommitStatusesForRef({
     ...ownerRepo,
@@ -35,7 +35,7 @@ export async function getCommitStatusList(
   const maxAge = parseCacheControlMaxAge(headers);
   if (maxAge !== COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S) {
     console.warn(
-      `Outdated expectation for Github statuses cache-control: expected ${COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S}, actual ${maxAge}`
+      `Outdated expectation for Github statuses cache-control: expected ${COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S}, actual ${maxAge}`,
     );
   }
 
@@ -46,7 +46,7 @@ export async function getCommitStatus(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
   sha: string,
-  context: string
+  context: string,
 ): Promise<Status | null> {
   const statusList = await getCommitStatusList(octokit, ownerRepo, sha);
   for (const status of statusList) {
@@ -67,7 +67,7 @@ export async function setCommitStatus(
   ownerRepo: OwnerRepo,
   sha: string,
   context: string,
-  update: UpdateState
+  update: UpdateState,
 ): Promise<Status> {
   const description = update.description ?? updateDescription(update);
   const { data } = await octokit.rest.repos.createCommitStatus({
@@ -81,12 +81,10 @@ export async function setCommitStatus(
   return data;
 }
 
-
 export async function getTeamMembers(
   octokit: Octokit,
   team: Team,
 ): Promise<Array<User>> {
-  const { data } = await octokit.rest.teams.listMembersInOrg({...team});
+  const { data } = await octokit.rest.teams.listMembersInOrg({ ...team });
   return data;
 }
-

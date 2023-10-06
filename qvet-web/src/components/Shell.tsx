@@ -1,8 +1,13 @@
-import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+
 import TopBar from "src/components/TopBar";
 
-export default function Shell({ children }: { children: React.ReactNode }) {
+export default function Shell({
+  children,
+}: {
+  children: React.ReactElement;
+}): React.ReactElement {
   return (
     <>
       <TopBar />

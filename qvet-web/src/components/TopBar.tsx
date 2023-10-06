@@ -1,9 +1,10 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import AccountMenu from "src/components/AccountMenu";
 import Typography from "@mui/material/Typography";
 
-export default function TopBar() {
+import AccountMenu from "src/components/AccountMenu";
+
+export default function TopBar(): React.ReactElement {
   return (
     <Grid container padding={2} spacing={2}>
       <Grid item xs={3} />

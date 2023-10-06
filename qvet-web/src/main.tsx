@@ -1,12 +1,16 @@
 import "./index.css";
-import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ReactDOM from "react-dom/client";
-import { Home, Oauth2Callback } from "./routes";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CssBaseline from "@mui/material/CssBaseline";
-import Theme from "src/components/Theme";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import Shell from "src/components/Shell";
+import Theme from "src/components/Theme";
+
+import { Home, Oauth2Callback } from "./routes";
+
+const queryClient = new QueryClient();
 
 function App() {
   removeUnusedLocalStorageItems();
@@ -25,7 +29,6 @@ function App() {
     },
   ]);
 
-  const queryClient = new QueryClient();
   return (
     <Theme>
       <CssBaseline>

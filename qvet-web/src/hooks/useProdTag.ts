@@ -1,12 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Octokit } from "octokit";
-import useOctokit from "src/hooks/useOctokit";
+
 import useConfig from "src/hooks/useConfig";
-import { Config } from "src/utils/config";
+import useOctokit from "src/hooks/useOctokit";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import { OwnerRepo } from "src/octokitHelpers";
+import { Config } from "src/utils/config";
 
-export default function useProdTag() {
+export default function useProdTag(): UseQueryResult<Tag | null> {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   const config = useConfig();
@@ -35,17 +36,21 @@ async function getProdTag(
   ownerRepo: OwnerRepo,
   config: Config,
 ): Promise<Tag | null> {
-  const tagPages = octokit.paginate.iterator(octokit.rest.repos.listTags, {
-    ...ownerRepo,
-    per_page: 100,
-  });
+  const tagPages = octokit.paginate.iterator(
+    octokit.rest.repos.listTags as any,
+    {
+      ...ownerRepo,
+      per_page: 100,
+    },
+  );
 
   const regexes: Array<RegExp> = config.release.identifiers.map(
     (identifier) => new RegExp(identifier.pattern),
   );
 
-  let page = 0;
-  for await (const { data: tags } of tagPages) {
+  let page_index = 0;
+  for await (const page of tagPages) {
+    const tags: Array<Tag> = page.data;
     for (const tag of tags) {
       for (const regex of regexes) {
         if (tag.name.match(regex)) {
@@ -55,8 +60,8 @@ async function getProdTag(
     }
 
     // FIXME better pagination
-    page += 1;
-    if (page > 2) {
+    page_index += 1;
+    if (page_index > 2) {
       break;
     }
   }

@@ -1,38 +1,45 @@
-import { useQueries } from "@tanstack/react-query";
-import { Commit, Status, User } from "src/octokitHelpers";
-import {
-  commitStatusQuery,
-  useCommitStatusList,
-  embargoListFromStatusList,
-} from "src/hooks/useCommitStatus";
-import useSetCommitState from "src/hooks/useSetCommitState";
-import { STATUS_CONTEXT_QA, STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
-import useOwnerRepo from "src/hooks/useOwnerRepo";
-import useConfig from "src/hooks/useConfig";
-import { Action } from "src/utils/config";
-import useOctokit from "src/hooks/useOctokit";
+import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import LoadingButton from "@mui/lab/LoadingButton";
+import {
+  useQueries,
+  UseQueryResult,
+  QueriesResults,
+} from "@tanstack/react-query";
 import { useCallback } from "react";
-import UserLink from "src/components/UserLink";
+
 import RelativeTime from "src/components/RelativeTime";
+import UserLink from "src/components/UserLink";
+import {
+  commitStatusQuery,
+  useCommitStatusList,
+  embargoListFromStatusList,
+} from "src/hooks/useCommitStatus";
+import useConfig from "src/hooks/useConfig";
+import useOctokit from "src/hooks/useOctokit";
+import useOwnerRepo from "src/hooks/useOwnerRepo";
+import useSetCommitState from "src/hooks/useSetCommitState";
 import useTeamMembers from "src/hooks/useTeamMembers";
+import { Commit, Status } from "src/octokitHelpers";
+import { STATUS_CONTEXT_QA, STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
+import { Action } from "src/utils/config";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
-  const statusQueries = useQueries({
+  const statusQueries: QueriesResults<Array<Status | null>> = useQueries({
     queries: commits.map((commit) =>
-      commitStatusQuery(octokit, ownerRepo, commit.sha, STATUS_CONTEXT_QA)
+      commitStatusQuery(octokit, ownerRepo, commit.sha, STATUS_CONTEXT_QA),
     ),
   });
   return statusQueries.every(
-    (statusQuery) =>
-      statusQuery.isSuccess && statusQuery.data?.state === "success"
+    (statusQuery: UseQueryResult<unknown, unknown>): boolean => {
+      const data: Status | null = statusQuery.data as any;
+      return statusQuery.isSuccess && data?.state === "success";
+    },
   );
 }
 
@@ -46,7 +53,7 @@ function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
   const [remove, setRemove] = useSetCommitState(
     sha,
     "success",
-    `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`
+    `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`,
   );
   const action = (
     <Stack style={{ height: "100%" }} spacing={1} justifyContent="center">
@@ -54,8 +61,7 @@ function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
         color="inherit"
         size="small"
         onClick={setRemove}
-        loading={remove.isLoading}
-      >
+        loading={remove.isLoading}>
         Resolve
       </LoadingButton>
     </Stack>
@@ -93,35 +99,45 @@ function selectUsers<T>(array: Array<T>) {
 }
 
 interface DeploymentUsersProps {
-  commits: Array<Commit>,
+  commits: Array<Commit>;
 }
 
 function DeploymentUsers({ commits }: DeploymentUsersProps) {
   const allUsers = useTeamMembers();
-  if (allUsers.isLoading || allUsers.isError || allUsers.data === null) return null;
+  if (allUsers.isLoading || allUsers.isError || allUsers.data === null)
+    return null;
 
-  const userIdsWithCommits = new Set(commits.map((commit) =>
-    commit.author?.id
-  ).filter((id) => id !== undefined));
-  const usersWithoutCommits = allUsers.data.filter((user) => !userIdsWithCommits.has(user.id));
-
-  if (usersWithoutCommits.length == 0) return (
-    <Typography>
-      All team members have a commit to be deployed, please ask the support-dev to do an emergency deployment
-    </Typography>
+  const userIdsWithCommits = new Set(
+    commits.map((commit) => commit.author?.id).filter((id) => id !== undefined),
   );
+  const usersWithoutCommits = allUsers.data.filter(
+    (user) => !userIdsWithCommits.has(user.id),
+  );
+
+  if (usersWithoutCommits.length === 0)
+    return (
+      <Typography>
+        All team members have a commit to be deployed, please ask the
+        support-dev to do an emergency deployment
+      </Typography>
+    );
 
   const luckyUsers = selectUsers(usersWithoutCommits);
   const userSingularOrPlural = luckyUsers.length > 1 ? "users" : "user";
   return (
     <Typography>
       The following randomly selected {userSingularOrPlural} can deploy:
-      <Stack style={{ padding: "0.5em", columnGap: "1em" }} spacing={1} direction="row">
-        {luckyUsers.map((user) => <UserLink user={user} />)}
+      <Stack
+        style={{ padding: "0.5em", columnGap: "1em" }}
+        spacing={1}
+        direction="row">
+        {luckyUsers.map((user) => (
+          <UserLink key={user.id} user={user} />
+        ))}
       </Stack>
     </Typography>
-  )
-};
+  );
+}
 
 export default function DeploymentHeadline({
   commits,
@@ -129,7 +145,7 @@ export default function DeploymentHeadline({
 }: {
   commits: Array<Commit>;
   baseSha: string;
-}) {
+}): React.ReactElement | null {
   const commitStatusList = useCommitStatusList(baseSha);
   const embargoList = commitStatusList.isSuccess
     ? embargoListFromStatusList(baseSha, commitStatusList.data)
@@ -155,8 +171,7 @@ export default function DeploymentHeadline({
       <Alert
         key="ready-to-deploy"
         severity="success"
-        action={!!action ? <ReadyAction action={action} /> : null}
-      >
+        action={action ? <ReadyAction action={action} /> : null}>
         Ready to Deploy
         <DeploymentUsers commits={commits} />
       </Alert>

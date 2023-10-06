@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Theme as MuiTheme,
   ThemeProvider,
@@ -7,8 +6,10 @@ import {
   Palette,
   PaletteColor,
 } from "@mui/material/styles";
+import * as React from "react";
 
 export const ColorModeContext = React.createContext({
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   toggleColorMode: () => {},
 });
 
@@ -18,7 +19,11 @@ const systemIsDarkTheme =
   window.matchMedia &&
   window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-export default function Theme({ children }: { children: React.ReactNode }) {
+export default function Theme({
+  children,
+}: {
+  children: React.ReactElement;
+}): React.ReactElement {
   const storedMode = (
     localStorage.getItem("theme_mode") ?? systemIsDarkTheme ? "dark" : "light"
   ) as ThemeMode;
@@ -36,7 +41,7 @@ export default function Theme({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const baseTheme = React.useMemo(() => createTheme(), [createTheme]);
+  const baseTheme = React.useMemo(() => createTheme(), []);
   const gradientButtonOverrides = makeGradientButtonOverrides(baseTheme);
   const theme = React.useMemo(
     () =>
@@ -52,7 +57,7 @@ export default function Theme({ children }: { children: React.ReactNode }) {
           },
         },
       }),
-    [mode],
+    [mode, gradientButtonOverrides],
   );
 
   return (

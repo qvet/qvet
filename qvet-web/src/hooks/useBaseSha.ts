@@ -1,12 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Octokit } from "octokit";
-import useOctokit from "src/hooks/useOctokit";
+
 import useConfig from "src/hooks/useConfig";
-import { Config } from "src/utils/config";
+import useOctokit from "src/hooks/useOctokit";
 import { useRepo } from "src/hooks/useOwnerRepo";
 import { Repository } from "src/octokitHelpers";
+import { Config } from "src/utils/config";
 
-export default function useBaseSha() {
+export default function useBaseSha(): UseQueryResult<string> {
   const octokit = useOctokit();
   const repo = useRepo();
   const config = useConfig();

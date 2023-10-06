@@ -1,12 +1,13 @@
-import Stack from "@mui/material/Stack";
-import { useConfigMeta } from "src/hooks/useConfig";
-import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
 
-export default function ConfigFile() {
+import { useConfigMeta } from "src/hooks/useConfig";
+
+export default function ConfigFile(): React.ReactElement {
   const configMeta = useConfigMeta();
 
   return (
@@ -42,8 +43,7 @@ export default function ConfigFile() {
               fontFamily: "monospace",
               whiteSpace: "pre-wrap",
               wordBreak: "break-all",
-            }}
-          >
+            }}>
             {JSON.stringify(configMeta.data.parseResult.config, undefined, 2)}
           </Box>
         )}

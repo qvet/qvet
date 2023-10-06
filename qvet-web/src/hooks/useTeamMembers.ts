@@ -1,25 +1,29 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import useOctokit from "src/hooks/useOctokit";
-import { getTeamMembers } from "src/queries";
 import { Octokit } from "octokit";
-import useConfig from "./useConfig";
+
+import useOctokit from "src/hooks/useOctokit";
+import { User } from "src/octokitHelpers";
+import { getTeamMembers } from "src/queries";
 import { Config } from "src/utils/config";
+
+import useConfig from "./useConfig";
 
 export function teamMembersQuery(
   octokit: Octokit | null,
   config: UseQueryResult<Config>,
-) {
+): object {
   return {
     queryKey: ["getTeamMembers", { team: config.data }],
     queryFn: () => {
-      const users = config.data!.team ? getTeamMembers(octokit!, config.data!.team) : null;
-      return users
+      return config.data!.team
+        ? getTeamMembers(octokit!, config.data!.team)
+        : null;
     },
     enabled: !!octokit && !!config.data,
   };
 }
 
-export default function useTeamMembers() {
+export default function useTeamMembers(): UseQueryResult<Array<User>> {
   const octokit = useOctokit();
   const config = useConfig();
   return useQuery(teamMembersQuery(octokit, config));

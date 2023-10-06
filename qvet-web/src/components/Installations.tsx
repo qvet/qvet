@@ -1,14 +1,15 @@
-import { Link } from "react-router-dom";
-import Comparison from "src/components/Comparison";
-import RepoSelect from "src/components/RepoSelect";
-import { useRepo } from "src/hooks/useOwnerRepo";
-import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
+import { Link } from "react-router-dom";
 
-export default function Installations() {
+import Comparison from "src/components/Comparison";
+import RepoSelect from "src/components/RepoSelect";
+import { useRepo } from "src/hooks/useOwnerRepo";
+
+export default function Installations(): React.ReactElement {
   const repo = useRepo();
 
   return repo.isError ? (

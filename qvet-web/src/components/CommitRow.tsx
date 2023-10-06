@@ -1,34 +1,39 @@
+import CloseIcon from "@mui/icons-material/Close";
+import DoneIcon from "@mui/icons-material/Done";
+import ReplayIcon from "@mui/icons-material/Replay";
 import LoadingButton from "@mui/lab/LoadingButton";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import Skeleton from "@mui/material/Skeleton";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
-import Skeleton from "@mui/material/Skeleton";
-import DoneIcon from "@mui/icons-material/Done";
-import CloseIcon from "@mui/icons-material/Close";
-import ReplayIcon from "@mui/icons-material/Replay";
-import { Commit } from "src/octokitHelpers";
-import UserLink from "src/components/UserLink";
-import ShaLink from "src/components/ShaLink";
-import useSetCommitState from "src/hooks/useSetCommitState";
-import { STATUS_CONTEXT_QA } from "src/queries";
 import { grey } from "@mui/material/colors";
-import DisplayState from "src/components/DisplayState";
-import useCommitStatus from "src/hooks/useCommitStatus";
 
-export default function CommitRow({ commit }: { commit: Commit }) {
+import DisplayState from "src/components/DisplayState";
+import ShaLink from "src/components/ShaLink";
+import UserLink from "src/components/UserLink";
+import useCommitStatus from "src/hooks/useCommitStatus";
+import useSetCommitState from "src/hooks/useSetCommitState";
+import { Commit } from "src/octokitHelpers";
+import { STATUS_CONTEXT_QA } from "src/queries";
+
+export default function CommitRow({
+  commit,
+}: {
+  commit: Commit;
+}): React.ReactElement {
   const sha = commit.sha;
   const status = useCommitStatus(sha, STATUS_CONTEXT_QA);
 
   const [approve, setApprove] = useSetCommitState(
     sha,
     "success",
-    STATUS_CONTEXT_QA
+    STATUS_CONTEXT_QA,
   );
   const [deny, setDeny] = useSetCommitState(sha, "failure", STATUS_CONTEXT_QA);
   const [clear, setClear] = useSetCommitState(
     sha,
     "pending",
-    STATUS_CONTEXT_QA
+    STATUS_CONTEXT_QA,
   );
 
   return (
@@ -41,8 +46,7 @@ export default function CommitRow({ commit }: { commit: Commit }) {
           whiteSpace: "nowrap",
           overflow: "hidden",
           width: "500px",
-        }}
-      >
+        }}>
         {commit.commit.message.split("\n")[0]}
       </TableCell>
       <TableCell>
@@ -65,23 +69,20 @@ export default function CommitRow({ commit }: { commit: Commit }) {
           <LoadingButton
             title="Mark QA as Completed"
             onClick={setApprove}
-            loading={approve.isLoading}
-          >
+            loading={approve.isLoading}>
             <DoneIcon />
           </LoadingButton>
           <LoadingButton
             title="Mark QA as Rejected"
             onClick={setDeny}
-            loading={deny.isLoading}
-          >
+            loading={deny.isLoading}>
             <CloseIcon />
           </LoadingButton>
           <LoadingButton
             title="Reset QA Status"
             style={{ color: grey[400] }}
             onClick={setClear}
-            loading={clear.isLoading}
-          >
+            loading={clear.isLoading}>
             <ReplayIcon />
           </LoadingButton>
         </ButtonGroup>

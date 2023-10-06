@@ -3,14 +3,15 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { Commit } from "src/octokitHelpers";
+
 import CommitRow from "src/components/CommitRow";
+import { Commit } from "src/octokitHelpers";
 
 export default function CommitTable({
   commits: rawCommits,
 }: {
   commits: Array<Commit>;
-}) {
+}): React.ReactElement {
   // FIXME warn/paginate on large numbers
   const commits = rawCommits.slice(0, 100);
 

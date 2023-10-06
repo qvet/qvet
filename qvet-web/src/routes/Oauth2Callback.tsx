@@ -1,7 +1,8 @@
-import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import ky from "ky";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+
 import FullPageLoading from "src/components/FullPageLoading";
 import { LOCAL_STORAGE_KEYS } from "src/constants";
 
@@ -24,7 +25,7 @@ async function apiCallback(body: Oauth2CallbackRequest): Promise<string> {
   return response.access_token;
 }
 
-export function Oauth2Callback() {
+export function Oauth2Callback(): React.ReactElement {
   const navigate = useNavigate();
 
   const query = new URLSearchParams(window.location.search);
@@ -47,7 +48,7 @@ export function Oauth2Callback() {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.oauthFlowInternalState);
       navigate("/");
     }
-  }, [accessToken, queryClient]);
+  }, [accessToken, queryClient, navigate]);
 
   return <FullPageLoading />;
 }

@@ -1,15 +1,16 @@
-import { useCallback, useRef, useState } from "react";
+import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import Dialog from "@mui/material/Dialog";
-import useSetCommitState from "src/hooks/useSetCommitState";
-import { STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import LoadingButton from "@mui/lab/LoadingButton";
+import { useCallback, useRef, useState } from "react";
+
+import useSetCommitState from "src/hooks/useSetCommitState";
+import { STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
 
 function randomHexId(): string {
   return Math.floor(Math.random() * 0xff_ff_ff_ff).toString(16);
@@ -21,7 +22,9 @@ export interface AddEmbargoDialogProps {
   onClose: () => void;
 }
 
-export default function AddEmbargoDialog(props: AddEmbargoDialogProps) {
+export default function AddEmbargoDialog(
+  props: AddEmbargoDialogProps,
+): React.ReactElement {
   const { onClose, open, sha } = props;
   const [message, setMessage] = useState<string>("");
 
@@ -30,7 +33,7 @@ export default function AddEmbargoDialog(props: AddEmbargoDialogProps) {
     sha,
     "failure",
     `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`,
-    message
+    message,
   );
 
   const inputGroupRef = useRef<HTMLElement>(null);
@@ -60,7 +63,7 @@ export default function AddEmbargoDialog(props: AddEmbargoDialogProps) {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setMessage(event.target.value);
     },
-    []
+    [],
   );
 
   return (
@@ -91,8 +94,7 @@ export default function AddEmbargoDialog(props: AddEmbargoDialogProps) {
           type="submit"
           variant="contained"
           loading={remove.isLoading}
-          onClick={handleOk}
-        >
+          onClick={handleOk}>
           Embargo
         </LoadingButton>
       </DialogActions>
