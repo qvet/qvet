@@ -50,10 +50,14 @@ interface EmbargoRowProps {
 }
 
 function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
-  const [remove, setRemove] = useSetCommitState(
+  const remove = useSetCommitState(
     sha,
     "success",
     `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`,
+  );
+  const setRemove = useCallback(
+    () => remove.mutate({ description: null }),
+    [remove],
   );
   const action = (
     <Stack style={{ height: "100%" }} spacing={1} justifyContent="center">
