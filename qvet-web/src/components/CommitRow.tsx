@@ -7,6 +7,7 @@ import Skeleton from "@mui/material/Skeleton";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import { grey } from "@mui/material/colors";
+import { useCallback } from "react";
 
 import DisplayState from "src/components/DisplayState";
 import ShaLink from "src/components/ShaLink";
@@ -24,16 +25,17 @@ export default function CommitRow({
   const sha = commit.sha;
   const status = useCommitStatus(sha, STATUS_CONTEXT_QA);
 
-  const [approve, setApprove] = useSetCommitState(
-    sha,
-    "success",
-    STATUS_CONTEXT_QA,
+  const approve = useSetCommitState(sha, "success", STATUS_CONTEXT_QA);
+  const deny = useSetCommitState(sha, "failure", STATUS_CONTEXT_QA);
+  const clear = useSetCommitState(sha, "pending", STATUS_CONTEXT_QA);
+  const setApprove = useCallback(
+    () => approve.mutate({ description: null }),
+    [approve],
   );
-  const [deny, setDeny] = useSetCommitState(sha, "failure", STATUS_CONTEXT_QA);
-  const [clear, setClear] = useSetCommitState(
-    sha,
-    "pending",
-    STATUS_CONTEXT_QA,
+  const setDeny = useCallback(() => deny.mutate({ description: null }), [deny]);
+  const setClear = useCallback(
+    () => clear.mutate({ description: null }),
+    [clear],
   );
 
   return (

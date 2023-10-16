@@ -11,19 +11,22 @@ import { Status } from "src/octokitHelpers";
 import { setCommitStatus } from "src/queries";
 import { WriteableState } from "src/utils/status";
 
+interface Variables {
+  description: string | null;
+}
+
 export default function useSetCommitState(
   sha: string,
   state: WriteableState,
   context: string,
-  description: string | null = null,
-): [UseMutationResult<unknown, unknown, void>, () => void] {
+): UseMutationResult<unknown, unknown, Variables> {
   const octokit = useOctokit();
   const login = useLogin();
   const ownerRepo = useOwnerRepo();
 
   const queryClient = useQueryClient();
-  const setCommitState = useMutation({
-    mutationFn: async () => {
+  return useMutation({
+    mutationFn: async ({ description }: Variables) => {
       if (!login.data || !octokit || !ownerRepo.data) {
         return;
       }
@@ -57,6 +60,4 @@ export default function useSetCommitState(
       }
     },
   });
-
-  return [setCommitState, () => setCommitState.mutate()];
 }

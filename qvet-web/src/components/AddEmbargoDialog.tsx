@@ -29,11 +29,10 @@ export default function AddEmbargoDialog(
   const [message, setMessage] = useState<string>("");
 
   const id = randomHexId();
-  const [remove, setRemove] = useSetCommitState(
+  const addEmbargo = useSetCommitState(
     sha,
     "failure",
     `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`,
-    message,
   );
 
   const inputGroupRef = useRef<HTMLElement>(null);
@@ -49,7 +48,7 @@ export default function AddEmbargoDialog(
   };
 
   const handleOk = () => {
-    setRemove();
+    addEmbargo.mutate({ description: message });
     onClose();
     setMessage("");
   };
@@ -93,7 +92,7 @@ export default function AddEmbargoDialog(
         <LoadingButton
           type="submit"
           variant="contained"
-          loading={remove.isLoading}
+          loading={addEmbargo.isLoading}
           onClick={handleOk}>
           Embargo
         </LoadingButton>
