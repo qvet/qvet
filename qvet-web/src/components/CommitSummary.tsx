@@ -1,16 +1,18 @@
+import { TextField } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from "@mui/material/Collapse";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useState, useCallback } from "react";
+import Fuse from "fuse.js";
+import { useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import AddEmbargoDialog from "src/components/AddEmbargoDialog";
 import CommitTable from "src/components/CommitTable";
 import ConfigStatus from "src/components/ConfigStatus";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
-import { CommitComparison, Repository } from "src/octokitHelpers";
+import { Commit, CommitComparison, Repository } from "src/octokitHelpers";
 import { Config } from "src/utils/config";
 
 interface CommitSummaryProps {
@@ -25,23 +27,28 @@ export default function CommitSummary({
   repo,
 }: CommitSummaryProps): React.ReactElement {
   const [expand, setExpand] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
 
   const authorLogins = config.commit.ignore.authors;
   const merges = config.commit.ignore.merges;
   const base_branch = config.commit.base
     ? config.commit.base
     : repo.default_branch;
-  const developerCommits = comparison.commits.filter((commit) => {
-    // Is a merge (and we don't want merges)
-    if (merges && commit.parents.length > 1) {
-      return false;
-    }
+  const developerCommits = useMemo(
+    () =>
+      comparison.commits.filter((commit) => {
+        // Is a merge (and we don't want merges)
+        if (merges && commit.parents.length > 1) {
+          return false;
+        }
 
-    // Author is in the ignore list
-    return !authorLogins.some(
-      (ignoredLogin) => ignoredLogin === commit.author?.login,
-    );
-  });
+        // Author is in the ignore list
+        return !authorLogins.some(
+          (ignoredLogin) => ignoredLogin === commit.author?.login,
+        );
+      }),
+    [authorLogins, comparison, merges],
+  );
   const ignoredCommitCount =
     comparison.commits.length - developerCommits.length;
   const ignoredParts = [];
@@ -66,10 +73,12 @@ export default function CommitSummary({
     </Link>
   );
 
-  // Duplicate the commits to show, so we can reverse the array
-  const visibleCommits =
+  const visibleCommits = useFuzzySearch(
     // If we're expanding ignored commits, use original without filtering
-    (expand ? comparison.commits : developerCommits).slice();
+    (expand ? comparison.commits : developerCommits).slice(),
+    search,
+  );
+  // Reverse the commits to get the latest on top
   visibleCommits.reverse();
 
   const deploymentHeadline = (
@@ -82,11 +91,16 @@ export default function CommitSummary({
 
   return (
     <Stack spacing={1}>
-      <Box padding={1}>
+      <Box padding={1} display="flex" justifyContent="space-between">
         <Stack spacing={1}>
           <RepoSummary repo={repo} />
           <RepoActions baseSha={comparison.base_commit.sha} />
         </Stack>
+        <TextField
+          variant="outlined"
+          placeholder="Search commits"
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </Box>
       {
         <Collapse in={!!deploymentHeadline || !!configStatus}>
@@ -143,3 +157,19 @@ function RepoActions({ baseSha }: { baseSha: string }) {
     </div>
   );
 }
+
+const useFuzzySearch = (list: Array<Commit>, search: string) => {
+  const fuse = useMemo(() => {
+    return new Fuse(list, {
+      keys: ["author.login", "commit.author.name", "commit.message"],
+      findAllMatches: true,
+      // We don't want sorting here as it will mess up the order (since it will
+      // order by closest match first)
+      shouldSort: false,
+    });
+  }, [list]);
+
+  // Only apply fuzzy filtering if we have a search, since Fuse won't return
+  // the entire list for `.search("")` which is sad
+  return search ? fuse.search(search).map((value) => value.item) : list;
+};

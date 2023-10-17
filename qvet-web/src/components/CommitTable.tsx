@@ -10,7 +10,7 @@ import { Commit } from "src/octokitHelpers";
 export default function CommitTable({
   commits: rawCommits,
 }: {
-  commits: Array<Commit>;
+  commits: ReadonlyArray<Commit>;
 }): React.ReactElement {
   // FIXME warn/paginate on large numbers
   const commits = rawCommits.slice(0, 100);
