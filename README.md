@@ -44,6 +44,13 @@ Start the two services in development/hot reload mode. Respectively:
 - `web` with `cd qvet-web && npm install && npm run dev`
 - `api` with `cd qvet-api && cargo watch -x 'run -- --bind 0.0.0.0:3000'`
 
+*NOTE*
+
+You'll need to make sure that `http://localhost` is mapped to an IPv4 address.
+If it isn't, then the webapp won't be able to resolve the API correctly.
+
+Check `/etc/hosts` for any keys that map to `localhost`.
+
 ## Standalone deployment
 
 For convenience, `qvet` can run bundled in a single binary.
