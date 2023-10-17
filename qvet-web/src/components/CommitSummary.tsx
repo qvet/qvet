@@ -98,7 +98,7 @@ export default function CommitSummary({
         </Stack>
         <TextField
           variant="outlined"
-          placeholder="Search commit authors"
+          placeholder="Search commits"
           onChange={(e) => setSearch(e.target.value)}
         />
       </Box>
@@ -161,7 +161,7 @@ function RepoActions({ baseSha }: { baseSha: string }) {
 const useFuzzySearch = (list: Array<Commit>, search: string) => {
   const fuse = useMemo(() => {
     return new Fuse(list, {
-      keys: ["author.login"],
+      keys: ["author.login", "commit.author.name", "commit.message"],
       findAllMatches: true,
       // We don't want sorting here as it will mess up the order (since it will
       // order by closest match first)
