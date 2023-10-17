@@ -9,7 +9,7 @@ import {
   UseQueryResult,
   QueriesResults,
 } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 
 import RelativeTime from "src/components/RelativeTime";
 import UserLink from "src/components/UserLink";
@@ -106,7 +106,7 @@ interface DeploymentUsersProps {
   commits: Array<Commit>;
 }
 
-function DeploymentUsers({ commits }: DeploymentUsersProps) {
+const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
   const allUsers = useTeamMembers();
   if (allUsers.isLoading || allUsers.isError || allUsers.data === null)
     return null;
@@ -141,7 +141,7 @@ function DeploymentUsers({ commits }: DeploymentUsersProps) {
       </Stack>
     </Typography>
   );
-}
+});
 
 export default function DeploymentHeadline({
   commits,

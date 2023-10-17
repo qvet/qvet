@@ -34,17 +34,21 @@ export default function CommitSummary({
   const base_branch = config.commit.base
     ? config.commit.base
     : repo.default_branch;
-  const developerCommits = comparison.commits.filter((commit) => {
-    // Is a merge (and we don't want merges)
-    if (merges && commit.parents.length > 1) {
-      return false;
-    }
+  const developerCommits = useMemo(
+    () =>
+      comparison.commits.filter((commit) => {
+        // Is a merge (and we don't want merges)
+        if (merges && commit.parents.length > 1) {
+          return false;
+        }
 
-    // Author is in the ignore list
-    return !authorLogins.some(
-      (ignoredLogin) => ignoredLogin === commit.author?.login,
-    );
-  });
+        // Author is in the ignore list
+        return !authorLogins.some(
+          (ignoredLogin) => ignoredLogin === commit.author?.login,
+        );
+      }),
+    [authorLogins, comparison, merges],
+  );
   const ignoredCommitCount =
     comparison.commits.length - developerCommits.length;
   const ignoredParts = [];
