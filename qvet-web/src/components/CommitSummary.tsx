@@ -1,4 +1,5 @@
-import { TextField } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
+import { IconButton, TextField, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from "@mui/material/Collapse";
@@ -12,8 +13,11 @@ import AddEmbargoDialog from "src/components/AddEmbargoDialog";
 import CommitTable from "src/components/CommitTable";
 import ConfigStatus from "src/components/ConfigStatus";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
+import useLogin from "src/hooks/useLogin";
 import { Commit, CommitComparison, Repository } from "src/octokitHelpers";
 import { Config } from "src/utils/config";
+
+import UserAvatar from "./UserAvatar";
 
 interface CommitSummaryProps {
   comparison: CommitComparison;
@@ -96,11 +100,7 @@ export default function CommitSummary({
           <RepoSummary repo={repo} />
           <RepoActions baseSha={comparison.base_commit.sha} />
         </Stack>
-        <TextField
-          variant="outlined"
-          placeholder="Search commits"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <CommitFiltering setSearch={setSearch} search={search} />
       </Box>
       {
         <Collapse in={!!deploymentHeadline || !!configStatus}>
@@ -172,4 +172,48 @@ const useFuzzySearch = (list: Array<Commit>, search: string) => {
   // Only apply fuzzy filtering if we have a search, since Fuse won't return
   // the entire list for `.search("")` which is sad
   return search ? fuse.search(search).map((value) => value.item) : list;
+};
+
+const CommitFiltering = ({
+  search,
+  setSearch,
+}: {
+  readonly search: string;
+  readonly setSearch: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  const loginData = useLogin();
+
+  return (
+    <TextField
+      variant="outlined"
+      placeholder="Search commits"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      InputProps={{
+        endAdornment: (
+          <>
+            <IconButton
+              onClick={() => setSearch("")}
+              size="small"
+              sx={{
+                visibility: search ? "visible" : "hidden",
+              }}>
+              <ClearIcon />
+            </IconButton>
+            {loginData.data ? (
+              <IconButton
+                onClick={() => setSearch(loginData.data.login)}
+                size="small">
+                <Tooltip title="Show my commits" arrow>
+                  <span>
+                    <UserAvatar user={loginData.data} />
+                  </span>
+                </Tooltip>
+              </IconButton>
+            ) : null}
+          </>
+        ),
+      }}
+    />
+  );
 };
