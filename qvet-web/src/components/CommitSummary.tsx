@@ -166,6 +166,8 @@ const useFuzzySearch = (list: Array<Commit>, search: string) => {
       // We don't want sorting here as it will mess up the order (since it will
       // order by closest match first)
       shouldSort: false,
+      threshold: 0.3,
+      distance: 30,
     });
   }, [list]);
 
