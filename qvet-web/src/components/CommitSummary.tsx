@@ -184,38 +184,36 @@ const CommitFiltering = ({
   const loginData = useLogin();
 
   return (
-    <Stack spacing={1} alignItems="flex-end">
-      <TextField
-        variant="outlined"
-        placeholder="Search commits"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        InputProps={{
-          endAdornment: (
-            <>
+    <TextField
+      variant="outlined"
+      placeholder="Search commits"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      InputProps={{
+        endAdornment: (
+          <>
+            <IconButton
+              onClick={() => setSearch("")}
+              size="small"
+              sx={{
+                visibility: search ? "visible" : "hidden",
+              }}>
+              <ClearIcon />
+            </IconButton>
+            {loginData.data ? (
               <IconButton
-                onClick={() => setSearch("")}
-                size="small"
-                sx={{
-                  visibility: search ? "visible" : "hidden",
-                }}>
-                <ClearIcon />
+                onClick={() => setSearch(loginData.data.login)}
+                size="small">
+                <Tooltip title="Show my commits" arrow>
+                  <span>
+                    <UserAvatar user={loginData.data} />
+                  </span>
+                </Tooltip>
               </IconButton>
-              {loginData.data ? (
-                <IconButton
-                  onClick={() => setSearch(loginData.data.login)}
-                  size="small">
-                  <Tooltip title="Show my commits" arrow>
-                    <span>
-                      <UserAvatar user={loginData.data} />
-                    </span>
-                  </Tooltip>
-                </IconButton>
-              ) : null}
-            </>
-          ),
-        }}
-      />
-    </Stack>
+            ) : null}
+          </>
+        ),
+      }}
+    />
   );
 };
