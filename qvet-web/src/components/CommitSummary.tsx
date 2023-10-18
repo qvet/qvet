@@ -1,4 +1,5 @@
-import { TextField } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
+import { IconButton, TextField } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from "@mui/material/Collapse";
@@ -96,11 +97,7 @@ export default function CommitSummary({
           <RepoSummary repo={repo} />
           <RepoActions baseSha={comparison.base_commit.sha} />
         </Stack>
-        <TextField
-          variant="outlined"
-          placeholder="Search commits"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <CommitFiltering setSearch={setSearch} search={search} />
       </Box>
       {
         <Collapse in={!!deploymentHeadline || !!configStatus}>
@@ -172,4 +169,21 @@ const useFuzzySearch = (list: Array<Commit>, search: string) => {
   // Only apply fuzzy filtering if we have a search, since Fuse won't return
   // the entire list for `.search("")` which is sad
   return search ? fuse.search(search).map((value) => value.item) : list;
+};
+
+const CommitFiltering = ({
+  search,
+  setSearch,
+}: {
+  readonly search: string;
+  readonly setSearch: React.Dispatch<React.SetStateAction<string>>;
+}) => {
+  return (
+    <TextField
+      variant="outlined"
+      placeholder="Search commits"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+  );
 };
