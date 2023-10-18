@@ -184,6 +184,18 @@ const CommitFiltering = ({
       placeholder="Search commits"
       value={search}
       onChange={(e) => setSearch(e.target.value)}
+      InputProps={{
+        endAdornment: (
+          <IconButton
+            onClick={() => setSearch("")}
+            size="small"
+            sx={{
+              visibility: search ? "visible" : "hidden",
+            }}>
+            <ClearIcon />
+          </IconButton>
+        ),
+      }}
     />
   );
 };
