@@ -19,6 +19,7 @@ import {
   embargoListFromStatusList,
 } from "src/hooks/useCommitStatus";
 import useConfig from "src/hooks/useConfig";
+import useLogin from "src/hooks/useLogin";
 import useOctokit from "src/hooks/useOctokit";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useSetCommitState from "src/hooks/useSetCommitState";
@@ -108,6 +109,7 @@ interface DeploymentUsersProps {
 
 const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
   const allUsers = useTeamMembers();
+  const loginData = useLogin();
   if (allUsers.isLoading || allUsers.isError || allUsers.data === null)
     return null;
 
@@ -125,6 +127,9 @@ const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
         support-dev to do an emergency deployment
       </Typography>
     );
+
+  if (loginData.data && loginData.data.id in usersWithoutCommits)
+    return <Typography>You can deploy!</Typography>;
 
   const luckyUsers = selectUsers(usersWithoutCommits);
   const userSingularOrPlural = luckyUsers.length > 1 ? "users" : "user";
