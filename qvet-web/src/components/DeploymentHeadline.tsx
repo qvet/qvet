@@ -110,8 +110,9 @@ interface DeploymentUsersProps {
 const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
   const allUsers = useTeamMembers();
   const loginData = useLogin();
-  if (allUsers.isLoading || allUsers.isError || allUsers.data === null)
+  if (allUsers.isLoading || allUsers.isError || allUsers.data === null) {
     return null;
+  }
 
   const userIdsWithCommits = new Set(
     commits.map((commit) => commit.author?.id).filter((id) => id !== undefined),
@@ -120,16 +121,21 @@ const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
     (user) => !userIdsWithCommits.has(user.id),
   );
 
-  if (usersWithoutCommits.length === 0)
+  if (usersWithoutCommits.length === 0) {
     return (
       <Typography>
         All team members have a commit to be deployed, please ask the
         support-dev to do an emergency deployment
       </Typography>
     );
+  }
 
-  if (loginData.data && loginData.data.id in usersWithoutCommits)
+  const userIdsWithoutCommits = new Set(
+    usersWithoutCommits.map((user) => user.id),
+  );
+  if (loginData.data && userIdsWithoutCommits.has(loginData.data.id)) {
     return <Typography>You can deploy!</Typography>;
+  }
 
   const luckyUsers = selectUsers(usersWithoutCommits);
   const userSingularOrPlural = luckyUsers.length > 1 ? "users" : "user";

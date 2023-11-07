@@ -142,6 +142,7 @@ module.exports = {
     "react/no-children-prop": "error",
     "react/no-find-dom-node": "error",
     "use-isnan": "error",
+    curly: "error",
 
     // Disabled
     "@typescript-eslint/no-explicit-any": "off",
