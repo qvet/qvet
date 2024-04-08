@@ -61,7 +61,7 @@ async function getProdTag(
 
     // FIXME better pagination
     page_index += 1;
-    if (page_index > 2) {
+    if (page_index > 5) {
       break;
     }
   }
