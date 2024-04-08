@@ -5,7 +5,6 @@ use axum::{
 };
 use axum_extra::extract::cookie::{Cookie, PrivateCookieJar, SameSite};
 use http::StatusCode;
-pub use oauth2::basic::BasicErrorResponse;
 use oauth2::reqwest::async_http_client;
 use oauth2::{
     basic::BasicTokenType, AccessToken, AuthorizationCode, CsrfToken, EmptyExtraTokenFields,
