@@ -8,6 +8,7 @@ import { getCommitStatus, getCommitStatusList } from "src/queries";
 import {
   COMMIT_STATUS_HTTP_CACHE_MAX_AGE_S,
   STATUS_CONTEXT_EMBARGO_PREFIX,
+  STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
 } from "src/queries";
 
 // Five minutes
@@ -61,6 +62,34 @@ export function embargoListFromStatusList(
     }
   });
   return embargoes;
+}
+
+export function deploymentNoteListFromStatusList(
+  sha: string,
+  commitStatusList: Array<Status>,
+): Array<Embargo> {
+  const ids = new Set();
+  const notes: Array<Embargo> = [];
+  commitStatusList.forEach((commitStatus) => {
+    const isNote = commitStatus.context.startsWith(
+      STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
+    );
+    const id = commitStatus.context.slice(
+      STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX.length,
+    );
+    const mostRecent = !ids.has(id);
+    if (isNote && mostRecent) {
+      ids.add(id);
+      if (commitStatus.state === "failure") {
+        notes.push({
+          sha,
+          id,
+          status: commitStatus,
+        });
+      }
+    }
+  });
+  return notes;
 }
 
 export function useCommitStatusList(

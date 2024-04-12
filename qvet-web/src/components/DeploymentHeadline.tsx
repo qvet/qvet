@@ -17,6 +17,7 @@ import {
   commitStatusQuery,
   useCommitStatusList,
   embargoListFromStatusList,
+  deploymentNoteListFromStatusList,
 } from "src/hooks/useCommitStatus";
 import useConfig from "src/hooks/useConfig";
 import useLogin from "src/hooks/useLogin";
@@ -25,7 +26,11 @@ import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useTeamMembers from "src/hooks/useTeamMembers";
 import { Commit, Status } from "src/octokitHelpers";
-import { STATUS_CONTEXT_QA, STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
+import {
+  STATUS_CONTEXT_QA,
+  STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
+  STATUS_CONTEXT_EMBARGO_PREFIX,
+} from "src/queries";
 import { Action } from "src/utils/config";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
@@ -76,6 +81,47 @@ function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
     <Alert severity="warning" action={action}>
       <AlertTitle>Embargo in place</AlertTitle>
       <Typography>{status.description || "<no reason>"}</Typography>
+      <Typography variant="caption">
+        Created{" "}
+        {status.creator ? (
+          <>
+            by <UserLink user={status.creator} inline />{" "}
+          </>
+        ) : (
+          ""
+        )}
+        <RelativeTime timestamp={status.created_at} />
+      </Typography>
+    </Alert>
+  );
+}
+
+function DeploymentNoteRow({ sha, status, id }: EmbargoRowProps) {
+  const remove = useSetCommitState(
+    sha,
+    "success",
+    `${STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX}${id}`,
+  );
+  const setRemove = useCallback(
+    () => remove.mutate({ description: null }),
+    [remove],
+  );
+  const action = (
+    <Stack style={{ height: "100%" }} spacing={1} justifyContent="center">
+      <LoadingButton
+        color="inherit"
+        size="small"
+        onClick={setRemove}
+        loading={remove.isLoading}>
+        Acknowledge
+      </LoadingButton>
+    </Stack>
+  );
+
+  return (
+    <Alert severity="info" action={action}>
+      <AlertTitle>On next deployment</AlertTitle>
+      <Typography>{status.description || "<no note>"}</Typography>
       <Typography variant="caption">
         Created{" "}
         {status.creator ? (
@@ -165,6 +211,9 @@ export default function DeploymentHeadline({
   const embargoList = commitStatusList.isSuccess
     ? embargoListFromStatusList(baseSha, commitStatusList.data)
     : null;
+  const deploymentNoteList = commitStatusList.isSuccess
+    ? deploymentNoteListFromStatusList(baseSha, commitStatusList.data)
+    : null;
 
   const noEmbargos = embargoList !== null && embargoList.length === 0;
   const allQaSuccess = useAllQaSuccess(commits);
@@ -172,14 +221,30 @@ export default function DeploymentHeadline({
   const config = useConfig();
   const action = !!config.data && config.data.action.ready;
 
-  const alerts = (embargoList || []).map((embargo) => (
-    <EmbargoRow
-      key={embargo.id}
-      sha={embargo.sha}
-      status={embargo.status}
-      id={embargo.id}
-    />
-  ));
+  const alerts = [];
+  // Add any embargoes first
+  alerts.push(
+    ...(embargoList || []).map((embargo) => (
+      <EmbargoRow
+        key={embargo.id}
+        sha={embargo.sha}
+        status={embargo.status}
+        id={embargo.id}
+      />
+    )),
+  );
+
+  // Then any notes
+  alerts.push(
+    ...(deploymentNoteList || []).map((note) => (
+      <DeploymentNoteRow
+        key={note.id}
+        sha={note.sha}
+        status={note.status}
+        id={note.id}
+      />
+    )),
+  );
 
   if (readyToDeploy) {
     const readyAlert = (
