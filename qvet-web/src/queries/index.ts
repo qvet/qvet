@@ -5,6 +5,7 @@ import { OwnerRepo, Status, User, Team } from "src/octokitHelpers";
 import { UpdateState, stateDisplay } from "src/utils/status";
 
 export const STATUS_CONTEXT_EMBARGO_PREFIX = "qvet/embargo/";
+export const STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX = "qvet/note/";
 export const STATUS_CONTEXT_QA = "qvet/qa";
 
 // Github requests commit statuses be cached for 60s in browser

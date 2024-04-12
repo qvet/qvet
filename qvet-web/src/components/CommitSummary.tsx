@@ -9,6 +9,7 @@ import Fuse from "fuse.js";
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import AddDeploymentNoteDialog from "src/components/AddDeploymentNoteDialog";
 import AddEmbargoDialog from "src/components/AddEmbargoDialog";
 import CommitTable from "src/components/CommitTable";
 import ConfigStatus from "src/components/ConfigStatus";
@@ -98,7 +99,10 @@ export default function CommitSummary({
       <Box padding={1} display="flex" justifyContent="space-between">
         <Stack spacing={1}>
           <RepoSummary repo={repo} />
-          <RepoActions baseSha={comparison.base_commit.sha} />
+          <Stack spacing={1} direction="row">
+            <RepoActions baseSha={comparison.base_commit.sha} />
+            <DeploymentActions baseSha={comparison.base_commit.sha} />
+          </Stack>
         </Stack>
         <CommitFiltering setSearch={setSearch} search={search} />
       </Box>
@@ -153,6 +157,29 @@ function RepoActions({ baseSha }: { baseSha: string }) {
         size="small"
         variant="outlined">
         Add Embargo
+      </Button>
+    </div>
+  );
+}
+
+function DeploymentActions({ baseSha }: { baseSha: string }) {
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = useCallback(() => setOpen(true), [setOpen]);
+  const handleClose = useCallback(() => setOpen(false), [setOpen]);
+  return (
+    <div>
+      <AddDeploymentNoteDialog
+        onClose={handleClose}
+        open={open}
+        sha={baseSha}
+      />
+      <Button
+        aria-label="deployment note repository"
+        component="label"
+        onClick={handleOpen}
+        size="small"
+        variant="outlined">
+        Add Deployment Note
       </Button>
     </div>
   );

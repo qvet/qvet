@@ -10,26 +10,26 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useRef, useState } from "react";
 
 import useSetCommitState from "src/hooks/useSetCommitState";
-import { STATUS_CONTEXT_EMBARGO_PREFIX } from "src/queries";
+import { STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX } from "src/queries";
 import { randomHexId } from "src/utils/helpers";
 
-export interface AddEmbargoDialogProps {
+export interface AddDeploymentNoteDialogProps {
   sha: string;
   open: boolean;
   onClose: () => void;
 }
 
-export default function AddEmbargoDialog(
-  props: AddEmbargoDialogProps,
+export default function AddDeploymentNoteDialog(
+  props: AddDeploymentNoteDialogProps,
 ): React.ReactElement {
   const { onClose, open, sha } = props;
   const [message, setMessage] = useState<string>("");
 
   const id = randomHexId();
-  const addEmbargo = useSetCommitState(
+  const addNote = useSetCommitState(
     sha,
     "failure",
-    `${STATUS_CONTEXT_EMBARGO_PREFIX}${id}`,
+    `${STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX}${id}`,
   );
 
   const inputGroupRef = useRef<HTMLElement>(null);
@@ -45,7 +45,7 @@ export default function AddEmbargoDialog(
   };
 
   const handleOk = () => {
-    addEmbargo.mutate({ description: message });
+    addNote.mutate({ description: message });
     onClose();
     setMessage("");
   };
@@ -64,12 +64,12 @@ export default function AddEmbargoDialog(
 
   return (
     <Dialog TransitionProps={{ onEntering: handleEntering }} open={open}>
-      <DialogTitle>Embargo Deployment</DialogTitle>
+      <DialogTitle>Deployment Note</DialogTitle>
       <DialogContent dividers>
         <form onSubmit={handleFormSubmit}>
           <Stack spacing={1}>
             <Typography variant="body2">
-              These commits should not be released because:
+              On next deployment, keep in mind that:
             </Typography>
             <TextField
               id="message"
@@ -89,9 +89,9 @@ export default function AddEmbargoDialog(
         <LoadingButton
           type="submit"
           variant="contained"
-          loading={addEmbargo.isLoading}
+          loading={addNote.isLoading}
           onClick={handleOk}>
-          Embargo
+          Note
         </LoadingButton>
       </DialogActions>
     </Dialog>
