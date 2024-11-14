@@ -5,6 +5,7 @@ use axum::{
 use axum_extra::extract::cookie::Key;
 use oauth2::basic::BasicClient;
 use std::sync::Arc;
+use tokio::net::TcpListener;
 use tower_http::{
     trace::{DefaultOnResponse, TraceLayer},
     LatencyUnit,
@@ -57,8 +58,8 @@ pub fn api_app(oauth2_client: BasicClient, cookie_key: Key) -> Router {
 /// Listen at the given address for a single OAuth2 code grant callback.
 pub async fn serve(address: &std::net::SocketAddr, app: Router) -> Result<()> {
     tracing::info!("Listening on {address:?}");
-    axum::Server::bind(address)
-        .serve(app.into_make_service())
+    let listener = TcpListener::bind(address).await.unwrap();
+    axum::serve(listener, app.into_make_service())
         .with_graceful_shutdown(shutdown_signal())
         .await
         .map_err(Error::Listener)?;

@@ -1,6 +1,12 @@
 [workspace]
-
+resolver = "2"
 members = [
     "qvet-api",
     "qvet-standalone",
 ]
+
+[workspace.dependencies]
+axum = { version = "0.7.0" }
+axum-extra = { version = "0.9.0", features = ["cookie", "cookie-private"] }
+hyper = { version = "1.0" }
+tower-http = { version = "0.5", default-features = false, features = ["trace"] }

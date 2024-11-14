@@ -1,10 +1,10 @@
 use crate::state::SharedState;
+use axum::http::StatusCode;
 use axum::{
     extract::{self, State},
     response::{IntoResponse, Json, Response},
 };
 use axum_extra::extract::cookie::{Cookie, PrivateCookieJar, SameSite};
-use http::StatusCode;
 use oauth2::reqwest::async_http_client;
 use oauth2::{
     basic::BasicTokenType, AccessToken, AuthorizationCode, CsrfToken, EmptyExtraTokenFields,
@@ -155,15 +155,14 @@ pub fn set_refresh_token_cookie(
     operation_id: &str,
 ) -> PrivateCookieJar {
     if let Some(refresh_token) = token_result.refresh_token() {
-        let cookie = Cookie::build(
+        let cookie = Cookie::build((
             COOKIE_KEY_NAME_REFRESH_TOKEN,
             refresh_token.secret().to_owned(),
-        )
+        ))
         .path("/")
         .secure(true)
         .http_only(true)
-        .same_site(SameSite::Strict)
-        .finish();
+        .same_site(SameSite::Strict);
         jar.add(cookie)
     } else {
         tracing::warn!("No refresh token in {operation_id} response");

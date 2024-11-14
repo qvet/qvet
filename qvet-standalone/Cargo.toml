@@ -17,14 +17,13 @@ path = "src/lib.rs"
 
 [dependencies]
 qvet-api = { version = "0.1.2", path = "../qvet-api" }
-tokio = { version = "1", default_features = false, features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.66"
-axum = { version = "0.6.0" }
+axum.workspace = true
 include_dir = "0.7.3"
 mime_guess = "2.0.4"
-http = "0.2.8"
 tracing = "0.1.37"
-axum-extra = { version = "0.5.0", features = ["cookie", "cookie-private"] }
+axum-extra.workspace = true
 
 # settings for cargo-workspaces
 [package.metadata.workspaces]
