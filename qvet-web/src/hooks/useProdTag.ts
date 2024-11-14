@@ -31,6 +31,8 @@ interface Tag {
   };
 }
 
+const MAX_TAG_PAGES_TO_LOAD = 10;
+
 async function getProdTag(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
@@ -59,9 +61,9 @@ async function getProdTag(
       }
     }
 
-    // FIXME better pagination
+    // FIXME better pagination/finding of prod tag
     page_index += 1;
-    if (page_index > 5) {
+    if (page_index >= MAX_TAG_PAGES_TO_LOAD) {
       break;
     }
   }
