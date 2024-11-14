@@ -25,12 +25,11 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-release-musl-${{ hashFiles('**/Cargo.lock') }}
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
-          profile: minimal
+          toolchain: "1.79.0"
           components: clippy, rustfmt
-          target: x86_64-unknown-linux-musl
+          targets: x86_64-unknown-linux-musl
       - name: Install node/npm
         uses: actions/setup-node@v3
         with:
