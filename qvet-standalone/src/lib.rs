@@ -18,6 +18,6 @@ pub fn wrapped_api(
 pub fn wrap_api(api: Router) -> Router {
     Router::new()
         .nest("/api", api)
-        .route("/*path", get(static_file_handler::static_path))
+        .route("/{*path}", get(static_file_handler::static_path))
         .route("/", get(static_file_handler::static_index))
 }

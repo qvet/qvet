@@ -5,7 +5,7 @@ use thiserror::Error;
 pub enum Error {
     /// There was an error with our local server listening for the response.
     #[error("Internal error in listener")]
-    Listener(hyper::Error),
+    Listener(std::io::Error),
 
     #[error("Invalid configuration: {message}")]
     InvalidConfiguration { message: String },
