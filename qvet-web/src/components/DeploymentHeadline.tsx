@@ -10,9 +10,14 @@ import {
   QueriesResults,
 } from "@tanstack/react-query";
 import { memo, useCallback } from "react";
+import { Link } from "react-router-dom";
 
 import RelativeTime from "src/components/RelativeTime";
 import UserLink from "src/components/UserLink";
+import {
+  filterUnresolvedCheckRuns,
+  useCheckRuns,
+} from "src/hooks/useCheckRuns";
 import {
   commitStatusQuery,
   useCommitStatusList,
@@ -26,6 +31,7 @@ import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useTeamMembers from "src/hooks/useTeamMembers";
 import { Commit, Status } from "src/octokitHelpers";
+import { CheckRun } from "src/octokitHelpers";
 import {
   STATUS_CONTEXT_QA,
   STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
@@ -137,6 +143,32 @@ function DeploymentNoteRow({ sha, status, id }: EmbargoRowProps) {
   );
 }
 
+// Alert for a check run that is either incomplete or failed
+function UnresolvedCheckRun({
+  checkRun,
+}: {
+  checkRun: CheckRun;
+}): React.ReactElement {
+  return (
+    <Alert severity="warning">
+      {checkRun.status === "completed" ? (
+        <AlertTitle>
+          {checkRun.name} has completed with status "{checkRun.conclusion}"
+        </AlertTitle>
+      ) : (
+        <AlertTitle>
+          {checkRun.name} is incomplete with status "{checkRun.status}"
+        </AlertTitle>
+      )}
+      {checkRun.details_url && (
+        <Link to={checkRun.details_url} target="_blank" rel="noopener">
+          {checkRun.details_url}
+        </Link>
+      )}
+    </Alert>
+  );
+}
+
 function selectUsers<T>(array: Array<T>) {
   // Optimally randomly select a set of max 3 users
   const finalArraySize = Math.min(array.length, 3);
@@ -221,6 +253,11 @@ export default function DeploymentHeadline({
   const config = useConfig();
   const action = !!config.data && config.data.action.ready;
 
+  const checkRuns = useCheckRuns();
+  const unresolvedCheckRuns = checkRuns.isSuccess
+    ? filterUnresolvedCheckRuns(checkRuns.data)
+    : null;
+
   const alerts = [];
   // Add any embargoes first
   alerts.push(
@@ -246,17 +283,31 @@ export default function DeploymentHeadline({
     )),
   );
 
+  if (checkRuns.isError) {
+    alerts.push(
+      <Alert severity="warning">
+        <AlertTitle>Check runs could not be fetched from GitHub api</AlertTitle>
+      </Alert>,
+    );
+  }
+
+  // Then any unsuccessful check runs
+  alerts.push(
+    ...(unresolvedCheckRuns || []).map((checkRun) => (
+      <UnresolvedCheckRun key={checkRun.id} checkRun={checkRun} />
+    )),
+  );
+
   if (readyToDeploy) {
-    const readyAlert = (
+    alerts.push(
       <Alert
         key="ready-to-deploy"
         severity="success"
         action={action ? <ReadyAction action={action} /> : null}>
         Ready to Deploy
         <DeploymentUsers commits={commits} />
-      </Alert>
+      </Alert>,
     );
-    alerts.push(readyAlert);
   }
 
   return alerts.length > 0 ? <Stack spacing={1}>{alerts}</Stack> : null;
