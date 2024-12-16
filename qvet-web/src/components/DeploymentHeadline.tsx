@@ -299,28 +299,15 @@ export default function DeploymentHeadline({
   );
 
   if (readyToDeploy) {
-    if (unresolvedCheckRuns) {
-      alerts.push(
-        <Alert
-          key="non-blocking-deploy"
-          severity="info"
-          action={action ? <ReadyAction action={action} /> : null}>
-          Some check runs have not completed successfuly, please consider before
-          deploying.
-          <DeploymentUsers commits={commits} />
-        </Alert>,
-      );
-    } else {
-      alerts.push(
-        <Alert
-          key="ready-to-deploy"
-          severity="success"
-          action={action ? <ReadyAction action={action} /> : null}>
-          Ready to Deploy
-          <DeploymentUsers commits={commits} />
-        </Alert>,
-      );
-    }
+    alerts.push(
+      <Alert
+        key="ready-to-deploy"
+        severity="success"
+        action={action ? <ReadyAction action={action} /> : null}>
+        Ready to Deploy
+        <DeploymentUsers commits={commits} />
+      </Alert>,
+    );
   }
 
   return alerts.length > 0 ? <Stack spacing={1}>{alerts}</Stack> : null;
