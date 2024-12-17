@@ -15,7 +15,7 @@ use tracing::Level;
 mod error;
 mod github;
 mod oauth_handler;
-mod redacted;
+pub mod redacted;
 pub mod runtime;
 mod state;
 

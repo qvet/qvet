@@ -2,7 +2,6 @@ use crate::redacted::Redacted;
 use anyhow::{anyhow, Context, Result};
 use axum_extra::extract::cookie::Key;
 use clap::Parser;
-use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use std::net::SocketAddr;
 
@@ -25,22 +24,28 @@ pub struct State {
     pub oauth2_client: BasicClient,
 }
 
-pub fn github_credentials_from_env() -> Result<(String, String)> {
-    dotenv().ok();
+const ENV_GITHUB_CLIENT_ID: &str = "GITHUB_CLIENT_ID";
+const ENV_GITHUB_CLIENT_SECRET: &str = "GITHUB_CLIENT_SECRET";
 
-    Ok((
-        std::env::var("GITHUB_CLIENT_ID").context("github client id")?,
-        std::env::var("GITHUB_CLIENT_SECRET").context("github client secret")?,
-    ))
+pub fn github_credentials_from_env() -> Result<(String, Redacted<String>)> {
+    let client_id = std::env::var(ENV_GITHUB_CLIENT_ID).context("github client id")?;
+    tracing::info!("{ENV_GITHUB_CLIENT_ID} loaded: {client_id:?}");
+    let client_secret =
+        Redacted::new(std::env::var(ENV_GITHUB_CLIENT_SECRET).context("github client secret")?);
+    tracing::info!("{ENV_GITHUB_CLIENT_SECRET} loaded: {client_secret:?}");
+    Ok((client_id, client_secret))
 }
 
 const ENV_QVET_COOKIE_KEY: &str = "QVET_COOKIE_KEY";
 
 pub fn cookie_key_from_env() -> Result<Key> {
     let Ok(raw_key) = std::env::var(ENV_QVET_COOKIE_KEY) else {
+        // If we aren't loading a cookie key from env, early return a random one
         tracing::warn!("{ENV_QVET_COOKIE_KEY} not set, using random cookie key");
         return Ok(Key::generate());
     };
+
+    // Otherwise, check it's valid, then load it
     let raw_key: Redacted<String> = Redacted::new(raw_key);
     tracing::info!("{ENV_QVET_COOKIE_KEY} loaded: {raw_key:?}");
 

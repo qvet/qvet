@@ -97,6 +97,16 @@ pub async fn oauth2_callback(
         .set_pkce_verifier(internal_state.pkce_verifier)
         .request_async(async_http_client)
         .await
+        .map_err(|error| match &error {
+            oauth2::RequestTokenError::Parse(_source, data) => {
+                tracing::error!(
+                    "Errored on response body: {}",
+                    String::from_utf8_lossy(data)
+                );
+                error
+            }
+            _ => error,
+        })
         .expect("request failure");
 
     let jar = set_refresh_token_cookie(jar, token_result, "exchange_code");
