@@ -1,9 +1,9 @@
-use axum::body::{self, Empty, Full};
+use axum::body::{self};
 use axum::extract::Path;
+use axum::http::header;
+use axum::http::HeaderValue;
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use http::header;
-use http::HeaderValue;
-use http::StatusCode;
 use include_dir::{include_dir, Dir, File};
 
 const STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/include");
@@ -22,7 +22,7 @@ async fn static_file(path: String) -> impl IntoResponse {
     match file {
         None => Response::builder()
             .status(StatusCode::NOT_FOUND)
-            .body(body::boxed(Empty::new()))
+            .body(Box::new(body::Body::empty()))
             .unwrap(),
         Some((file, path)) => {
             const MAX_AGE_ONE_WEEK: &str = "max-age=604800";
@@ -45,7 +45,7 @@ async fn static_file(path: String) -> impl IntoResponse {
                     header::CACHE_CONTROL,
                     HeaderValue::from_str(cache_control_value).unwrap(),
                 )
-                .body(body::boxed(Full::from(file.contents())))
+                .body(Box::new(body::Body::from(file.contents())))
                 .unwrap()
         }
     }
