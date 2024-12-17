@@ -3,6 +3,7 @@ use qvet_api::serve;
 use qvet_standalone::wrapped_api;
 
 async fn run(args: runtime::Args) -> anyhow::Result<()> {
+    dotenv::dotenv().ok();
     let (client_id, client_secret) = runtime::github_credentials_from_env()?;
     let cookie_key = runtime::cookie_key_from_env()?;
     let app = wrapped_api(client_id, client_secret, cookie_key)?;
