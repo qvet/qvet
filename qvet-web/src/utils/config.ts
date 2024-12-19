@@ -94,6 +94,22 @@ const SCHEMA_TEAM = {
   additionalProperties: false,
 };
 
+const SCHEMA_ROUTINE_CHECK = {
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 36 },
+    text: { type: "string", maxLength: 256 },
+    url: { type: "string", maxLength: 256 },
+  },
+  required: ["id", "text"],
+  additionalProperties: false,
+};
+
+const SCHEMA_ROUTINE_CHECKS = {
+  type: "array",
+  items: SCHEMA_ROUTINE_CHECK,
+};
+
 const SCHEMA = {
   type: "object",
   properties: {
@@ -101,6 +117,7 @@ const SCHEMA = {
     commit: SCHEMA_COMMIT,
     release: SCHEMA_RELEASE,
     team: SCHEMA_TEAM,
+    routine_checks: SCHEMA_ROUTINE_CHECKS,
   },
   required: [],
   additionalProperties: false,
@@ -121,6 +138,7 @@ export interface Config {
     identifiers: Array<Identifier>;
   };
   team: Team | null;
+  routine_checks: Array<RoutineCheck>;
 }
 
 export interface ActionLink {
@@ -144,6 +162,12 @@ export type Identifier = IdentifierTag;
 export interface ParseConfigFileResult {
   config: Config;
   errorsText: string | null;
+}
+
+export interface RoutineCheck {
+  id: string;
+  text: string;
+  url?: string;
 }
 
 export function parseConfigFile(configFile: string): ParseConfigFileResult {
@@ -178,5 +202,6 @@ function standardiseConfig(raw: any): Config {
       ],
     },
     team: raw.team ?? null,
+    routine_checks: raw.routine_checks ?? [],
   };
 }

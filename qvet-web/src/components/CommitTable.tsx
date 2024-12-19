@@ -7,30 +7,37 @@ import TableRow from "@mui/material/TableRow";
 import CommitRow from "src/components/CommitRow";
 import { Commit } from "src/octokitHelpers";
 
+import TableHeader from "./TableHeader";
+
 export default function CommitTable({
   commits: rawCommits,
+  showHeader,
 }: {
   commits: ReadonlyArray<Commit>;
+  showHeader: boolean;
 }): React.ReactElement {
   // FIXME warn/paginate on large numbers
   const commits = rawCommits.slice(0, 100);
 
   return (
-    <Table sx={{ minWidth: 650 }} size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell>Message</TableCell>
-          <TableCell>Author</TableCell>
-          <TableCell>Hash</TableCell>
-          <TableCell>Manual QA</TableCell>
-          <TableCell>Actions</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {commits.map((commit) => (
-          <CommitRow key={commit.sha} commit={commit} />
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      {showHeader && <TableHeader title="Commits" />}
+      <Table sx={{ minWidth: 650 }} size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Message</TableCell>
+            <TableCell>Author</TableCell>
+            <TableCell>Hash</TableCell>
+            <TableCell>Manual QA</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {commits.map((commit) => (
+            <CommitRow key={commit.sha} commit={commit} />
+          ))}
+        </TableBody>
+      </Table>
+    </>
   );
 }
