@@ -28,6 +28,7 @@ import useConfig from "src/hooks/useConfig";
 import useLogin from "src/hooks/useLogin";
 import useOctokit from "src/hooks/useOctokit";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
+import useRoutineChecksComplete from "src/hooks/useRoutineChecksComplete";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useTeamMembers from "src/hooks/useTeamMembers";
 import { Commit, Status } from "src/octokitHelpers";
@@ -37,7 +38,7 @@ import {
   STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
   STATUS_CONTEXT_EMBARGO_PREFIX,
 } from "src/queries";
-import { Action } from "src/utils/config";
+import { Action, RoutineCheck } from "src/utils/config";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
   const octokit = useOctokit();
@@ -235,11 +236,17 @@ const DeploymentUsers = memo(function ({ commits }: DeploymentUsersProps) {
 export default function DeploymentHeadline({
   commits,
   baseSha,
+  routineChecks,
 }: {
   commits: Array<Commit>;
   baseSha: string;
+  routineChecks: ReadonlyArray<RoutineCheck>;
 }): React.ReactElement | null {
   const commitStatusList = useCommitStatusList(baseSha);
+  const routineChecksComplete = useRoutineChecksComplete(
+    baseSha,
+    routineChecks,
+  );
   const embargoList = commitStatusList.isSuccess
     ? embargoListFromStatusList(baseSha, commitStatusList.data)
     : null;
@@ -249,7 +256,8 @@ export default function DeploymentHeadline({
 
   const noEmbargos = embargoList !== null && embargoList.length === 0;
   const allQaSuccess = useAllQaSuccess(commits);
-  const readyToDeploy = noEmbargos && allQaSuccess && commits.length > 0;
+  const readyToDeploy =
+    noEmbargos && allQaSuccess && commits.length > 0 && routineChecksComplete;
   const config = useConfig();
   const action = !!config.data && config.data.action.ready;
 

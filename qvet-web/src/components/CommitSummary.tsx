@@ -18,6 +18,7 @@ import useLogin from "src/hooks/useLogin";
 import { Commit, CommitComparison, Repository } from "src/octokitHelpers";
 import { Config } from "src/utils/config";
 
+import RoutineChecks from "./RoutineChecks";
 import UserAvatar from "./UserAvatar";
 
 interface CommitSummaryProps {
@@ -89,6 +90,7 @@ export default function CommitSummary({
   const deploymentHeadline = (
     <DeploymentHeadline
       commits={developerCommits}
+      routineChecks={config.routine_checks}
       baseSha={comparison.base_commit.sha}
     />
   );
@@ -112,7 +114,16 @@ export default function CommitSummary({
           {configStatus}
         </Collapse>
       }
-      <CommitTable commits={visibleCommits} />
+      <CommitTable
+        commits={visibleCommits}
+        showHeader={!!config.routine_checks.length}
+      />
+      {config.routine_checks.length > 0 && (
+        <RoutineChecks
+          checks={config.routine_checks}
+          baseSha={comparison.base_commit.sha}
+        />
+      )}
       <Typography variant="caption">
         Showing {developerCommits.length} undeployed commits on{" "}
         <code>{base_branch}</code> (view the{" "}

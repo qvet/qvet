@@ -1,4 +1,4 @@
-import { components } from "@octokit/openapi-types";
+import { components, paths } from "@octokit/openapi-types";
 
 export interface OwnerRepo {
   owner: string;
@@ -18,3 +18,6 @@ export type User = components["schemas"]["simple-user"];
 export type Repository = components["schemas"]["repository"];
 export type Installation = components["schemas"]["installation"];
 export type Ref = components["schemas"]["git-ref"];
+
+export type UpdateStatus =
+  paths["/repos/{owner}/{repo}/statuses/{sha}"]["post"]["requestBody"];

@@ -4,6 +4,8 @@ import { Octokit } from "octokit";
 import { OwnerRepo, Status, User, Team } from "src/octokitHelpers";
 import { UpdateState, stateDisplay } from "src/utils/status";
 
+export const STATUS_CONTEXT_ROUTINE_CHECK_PREFIX = "qvet/routine-check/";
+export const STATUS_CONTEXT_ROUTINE_CHECK_OWNERS = "qvet/routine-check/owners";
 export const STATUS_CONTEXT_EMBARGO_PREFIX = "qvet/embargo/";
 export const STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX = "qvet/note/";
 export const STATUS_CONTEXT_QA = "qvet/qa";

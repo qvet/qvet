@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Octokit } from "octokit";
 
 import useOctokit from "src/hooks/useOctokit";
@@ -115,4 +115,24 @@ export default function useCommitStatus(
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   return useQuery(commitStatusQuery(octokit, ownerRepo, sha, context));
+}
+
+export function useCommitStatuses(
+  sha: string,
+  contexts: ReadonlyArray<string>,
+): Array<UseQueryResult<Status | null>> {
+  const octokit = useOctokit();
+  const ownerRepo = useOwnerRepo();
+  return useQueries({
+    queries: contexts.map((context) => ({
+      queryKey: [
+        "getCommitStatus",
+        { ownerRepo: ownerRepo.data, sha, context },
+      ],
+      queryFn: () => getCommitStatus(octokit!, ownerRepo.data!, sha, context),
+      refetchInterval: COMMIT_STATUS_POLL_INTERVAL_MS,
+      staleTime: COMMIT_STATUS_STALE_TIME_MS,
+      enabled: !!octokit && !!ownerRepo.data,
+    })),
+  });
 }
