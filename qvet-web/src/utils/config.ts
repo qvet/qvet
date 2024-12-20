@@ -110,6 +110,36 @@ const SCHEMA_ROUTINE_CHECKS = {
   items: SCHEMA_ROUTINE_CHECK,
 };
 
+const SCHEMA_CHECK_RUN_LEVEL = {
+  type: "string",
+  enum: ["hidden", "info", "embargo"],
+};
+
+const SCHEMA_CHECK_RUN = {
+  type: "object",
+  properties: {
+    name: { type: "string", maxLength: 256 },
+    level: SCHEMA_CHECK_RUN_LEVEL,
+    url: { type: "string", maxLength: 256 },
+  },
+  required: ["name", "level"],
+  additionalProperties: false,
+};
+
+const SCHEMA_EXTERNAL_CHECKS = {
+  type: "object",
+  properties: {
+    enabled: { type: "boolean" },
+    default_level: SCHEMA_CHECK_RUN_LEVEL,
+    items: {
+      type: "array",
+      items: SCHEMA_CHECK_RUN,
+    },
+  },
+  required: ["enabled", "default_level", "items"],
+  additionalProperties: false,
+};
+
 const SCHEMA = {
   type: "object",
   properties: {
@@ -118,6 +148,7 @@ const SCHEMA = {
     release: SCHEMA_RELEASE,
     team: SCHEMA_TEAM,
     routine_checks: SCHEMA_ROUTINE_CHECKS,
+    check_runs: SCHEMA_EXTERNAL_CHECKS,
   },
   required: [],
   additionalProperties: false,
@@ -139,6 +170,7 @@ export interface Config {
   };
   team: Team | null;
   routine_checks: Array<RoutineCheck>;
+  check_runs: CheckRunGlobalConfig;
 }
 
 export interface ActionLink {
@@ -159,15 +191,29 @@ export interface IdentifierTag {
 }
 export type Identifier = IdentifierTag;
 
-export interface ParseConfigFileResult {
-  config: Config;
-  errorsText: string | null;
-}
-
 export interface RoutineCheck {
   id: string;
   text: string;
   url?: string;
+}
+
+export type CheckRunLevel = "hidden" | "info" | "embargo";
+
+export interface CheckRunItemConfig {
+  name: string;
+  level: CheckRunLevel;
+  url?: string;
+}
+
+export interface CheckRunGlobalConfig {
+  enabled: true;
+  default_level: CheckRunLevel;
+  items: Array<CheckRunItemConfig>;
+}
+
+export interface ParseConfigFileResult {
+  config: Config;
+  errorsText: string | null;
 }
 
 export function parseConfigFile(configFile: string): ParseConfigFileResult {
@@ -203,5 +249,10 @@ function standardiseConfig(raw: any): Config {
     },
     team: raw.team ?? null,
     routine_checks: raw.routine_checks ?? [],
+    check_runs: raw.check_runs ?? {
+      enabled: false,
+      default_level: "hidden",
+      items: [],
+    },
   };
 }

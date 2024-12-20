@@ -92,19 +92,20 @@ export function deploymentNoteListFromStatusList(
   return notes;
 }
 
+// query remains disabled if sha is undefined
 export function useCommitStatusList(
-  sha: string,
+  sha?: string,
 ): UseQueryResult<Array<Status>> {
   const octokit = useOctokit();
   const ownerRepo = useOwnerRepo();
   return useQuery({
     queryKey: ["getCommitStatusList", { ownerRepo: ownerRepo.data, sha }],
     queryFn: async (): Promise<Array<Status>> => {
-      return getCommitStatusList(octokit!, ownerRepo.data!, sha);
+      return getCommitStatusList(octokit!, ownerRepo.data!, sha!);
     },
     refetchInterval: COMMIT_STATUS_POLL_INTERVAL_MS,
     staleTime: COMMIT_STATUS_STALE_TIME_MS,
-    enabled: !!octokit && !!ownerRepo.data,
+    enabled: !!octokit && !!ownerRepo.data && !!sha,
   });
 }
 

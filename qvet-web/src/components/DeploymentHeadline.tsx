@@ -10,13 +10,14 @@ import {
   QueriesResults,
 } from "@tanstack/react-query";
 import { memo, useCallback } from "react";
-import { Link } from "react-router-dom";
 
 import RelativeTime from "src/components/RelativeTime";
 import UserLink from "src/components/UserLink";
 import {
   filterUnresolvedCheckRuns,
+  filterVisibleCheckRuns,
   useCheckRuns,
+  useCheckRunsEmbargo,
 } from "src/hooks/useCheckRuns";
 import {
   commitStatusQuery,
@@ -32,13 +33,14 @@ import useRoutineChecksComplete from "src/hooks/useRoutineChecksComplete";
 import useSetCommitState from "src/hooks/useSetCommitState";
 import useTeamMembers from "src/hooks/useTeamMembers";
 import { Commit, Status } from "src/octokitHelpers";
-import { CheckRun } from "src/octokitHelpers";
 import {
   STATUS_CONTEXT_QA,
   STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
   STATUS_CONTEXT_EMBARGO_PREFIX,
 } from "src/queries";
 import { Action, RoutineCheck } from "src/utils/config";
+
+import UnresolvedCheckRun from "./UnresolvedCheckRun";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
   const octokit = useOctokit();
@@ -144,32 +146,6 @@ function DeploymentNoteRow({ sha, status, id }: EmbargoRowProps) {
   );
 }
 
-// Alert for a check run that is either incomplete or failed
-function UnresolvedCheckRun({
-  checkRun,
-}: {
-  checkRun: CheckRun;
-}): React.ReactElement {
-  return (
-    <Alert severity="warning">
-      {checkRun.status === "completed" ? (
-        <AlertTitle>
-          {checkRun.name} has completed with status "{checkRun.conclusion}"
-        </AlertTitle>
-      ) : (
-        <AlertTitle>
-          {checkRun.name} is incomplete with status "{checkRun.status}"
-        </AlertTitle>
-      )}
-      {checkRun.details_url && (
-        <Link to={checkRun.details_url} target="_blank" rel="noopener">
-          {checkRun.details_url}
-        </Link>
-      )}
-    </Alert>
-  );
-}
-
 function selectUsers<T>(array: Array<T>) {
   // Optimally randomly select a set of max 3 users
   const finalArraySize = Math.min(array.length, 3);
@@ -254,17 +230,24 @@ export default function DeploymentHeadline({
     ? deploymentNoteListFromStatusList(baseSha, commitStatusList.data)
     : null;
 
-  const noEmbargos = embargoList !== null && embargoList.length === 0;
-  const allQaSuccess = useAllQaSuccess(commits);
-  const readyToDeploy =
-    noEmbargos && allQaSuccess && commits.length > 0 && routineChecksComplete;
   const config = useConfig();
   const action = !!config.data && config.data.action.ready;
 
-  const checkRuns = useCheckRuns();
+  const checkRuns = useCheckRuns(config.data?.check_runs.enabled || false);
   const unresolvedCheckRuns = checkRuns.isSuccess
     ? filterUnresolvedCheckRuns(checkRuns.data)
-    : null;
+    : [];
+  const displayableCheckRuns = config.data
+    ? filterVisibleCheckRuns(unresolvedCheckRuns, config.data.check_runs)
+    : [];
+
+  const checkRunsEmbargo = useCheckRunsEmbargo(config.data?.check_runs);
+  const noEmbargos =
+    embargoList !== null && embargoList.length === 0 && !checkRunsEmbargo;
+  const allQaSuccess = useAllQaSuccess(commits);
+
+  const readyToDeploy =
+    noEmbargos && allQaSuccess && commits.length > 0 && routineChecksComplete;
 
   const alerts = [];
   // Add any embargoes first
@@ -300,11 +283,17 @@ export default function DeploymentHeadline({
   }
 
   // Then any unsuccessful check runs
-  alerts.push(
-    ...(unresolvedCheckRuns || []).map((checkRun) => (
-      <UnresolvedCheckRun key={checkRun.id} checkRun={checkRun} />
-    )),
-  );
+  if (config.data) {
+    alerts.push(
+      ...displayableCheckRuns.map((checkRun) => (
+        <UnresolvedCheckRun
+          key={checkRun.id}
+          checkRun={checkRun}
+          config={config.data.check_runs}
+        />
+      )),
+    );
+  }
 
   if (readyToDeploy) {
     alerts.push(
