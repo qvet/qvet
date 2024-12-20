@@ -4,16 +4,24 @@ import { Octokit } from "octokit";
 import useAccessToken from "src/hooks/useAccessToken";
 import useOctokit from "src/hooks/useOctokit";
 import { CheckRun, OwnerRepo } from "src/octokitHelpers";
+import { STATUS_CONTEXT_CHECK_RUN_EMBARGO_PREFIX } from "src/queries";
+import { CheckRunGlobalConfig, CheckRunLevel } from "src/utils/config";
 
 import useBaseSha from "./useBaseSha";
+import { useCommitStatusList } from "./useCommitStatus";
 import useOwnerRepo from "./useOwnerRepo";
+
+export const checkRunOverruleContext = (check: CheckRun): string =>
+  `${STATUS_CONTEXT_CHECK_RUN_EMBARGO_PREFIX}/${check.name}`;
 
 /**
  * Return all checks runs for base SHA
  *
  * Will fail if no user is credentialed.
  */
-export function useCheckRuns(): UseQueryResult<Array<CheckRun>, Error> {
+export function useCheckRuns(
+  enabled: boolean,
+): UseQueryResult<Array<CheckRun>, Error> {
   const accessToken = useAccessToken();
   const octokit = useOctokit();
   const baseSha = useBaseSha();
@@ -23,7 +31,11 @@ export function useCheckRuns(): UseQueryResult<Array<CheckRun>, Error> {
     queryKey: ["getCheckRuns", accessToken.data],
     queryFn: () => getCheckRuns(octokit!, baseSha.data!, ownerRepo.data!),
     enabled:
-      !!accessToken.data && !!baseSha.data && !!ownerRepo.data && !!octokit,
+      enabled &&
+      !!accessToken.data &&
+      !!baseSha.data &&
+      !!ownerRepo.data &&
+      !!octokit,
   });
 }
 
@@ -38,6 +50,26 @@ async function getCheckRuns(
   });
   return response.data.check_runs;
 }
+
+export const getCheckRunLevel = (
+  checkRun: CheckRun,
+  config: CheckRunGlobalConfig,
+): CheckRunLevel => {
+  const configCheckRun = config.items.find(
+    (configCheckRun) => configCheckRun.name === checkRun.name,
+  );
+  return configCheckRun ? configCheckRun.level : config.default_level;
+};
+
+// filter for check runs that have not returned success on their latest run
+export const filterVisibleCheckRuns = (
+  checkRuns: ReadonlyArray<CheckRun>,
+  config: CheckRunGlobalConfig,
+): ReadonlyArray<CheckRun> => {
+  return checkRuns.filter(
+    (checkRun) => getCheckRunLevel(checkRun, config) !== "hidden",
+  );
+};
 
 // filter for check runs that have not returned success on their latest run
 export const filterUnresolvedCheckRuns = (
@@ -82,4 +114,43 @@ const filterLatestAttempts = (
       return completed.slice(0, 1);
     }
   });
+};
+
+export const useCheckRunsEmbargo = (config?: CheckRunGlobalConfig): boolean => {
+  const checkRuns = useCheckRuns(config?.enabled || false);
+  const baseSha = useBaseSha();
+  const commitStatusList = useCommitStatusList(
+    config ? baseSha.data : undefined,
+  );
+
+  if (!config || !config.enabled) {
+    // do not embargo if no config or config has check runs disabled
+    return false;
+  }
+  if (commitStatusList.isLoading || checkRuns.isLoading) {
+    // hold embargo while queries are loading
+    return true;
+  }
+
+  if (!commitStatusList.data || !checkRuns.data) {
+    // do not embargo if endpoint has failed to return
+    return false;
+  }
+
+  const embargoCheckRunContexts = new Set(
+    filterUnresolvedCheckRuns(checkRuns.data)
+      .filter((checkRun) => getCheckRunLevel(checkRun, config) === "embargo")
+      .map(checkRunOverruleContext),
+  );
+  for (const context of embargoCheckRunContexts) {
+    const commitStatus = commitStatusList.data.find(
+      // first commit status is the latest
+      (commitStatus) => commitStatus.context === context,
+    );
+    if (!commitStatus || commitStatus.state !== "success") {
+      // if not found or state is not success the embargo persists
+      return true;
+    }
+  }
+  return false;
 };
