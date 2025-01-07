@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import useBaseSha from "src/hooks/useBaseSha";
 import {
   checkRunOverruleContext,
+  getCheckRunConfigUrl,
   getCheckRunLevel,
 } from "src/hooks/useCheckRuns";
 import useCommitStatus from "src/hooks/useCommitStatus";
@@ -24,13 +25,20 @@ export default function UnresolvedCheckRun({
 }): React.ReactElement {
   const baseSha = useBaseSha();
   const level = getCheckRunLevel(checkRun, config);
+  const configUrl = getCheckRunConfigUrl(checkRun, config);
 
   switch (level) {
     case "info":
-      return <InfoCheckRun checkRun={checkRun} />;
+      return <InfoCheckRun checkRun={checkRun} configUrl={configUrl} />;
     case "embargo":
       if (baseSha.data) {
-        return <EmbargoCheckRun checkRun={checkRun} sha={baseSha.data} />;
+        return (
+          <EmbargoCheckRun
+            checkRun={checkRun}
+            sha={baseSha.data}
+            configUrl={configUrl}
+          />
+        );
       }
       return <></>;
     case "hidden":
@@ -43,8 +51,10 @@ export default function UnresolvedCheckRun({
 
 function InfoCheckRun({
   checkRun,
+  configUrl,
 }: {
   checkRun: CheckRun;
+  configUrl: string | null;
 }): React.ReactElement {
   const checkRunName = (
     <span style={{ fontWeight: "bold" }}>
@@ -74,9 +84,11 @@ function InfoCheckRun({
       This job does not block deployment. Re-run this job successfully to
       resolve this issue.
       <br />
-      <Link to={checkRun.url} target="_blank" rel="noopener">
-        What is this job?
-      </Link>
+      {configUrl && (
+        <Link to={configUrl} target="_blank" rel="noopener">
+          What is this job?
+        </Link>
+      )}
     </Alert>
   );
 }
@@ -84,9 +96,11 @@ function InfoCheckRun({
 function EmbargoCheckRun({
   checkRun,
   sha,
+  configUrl,
 }: {
   checkRun: CheckRun;
   sha: string;
+  configUrl: string | null;
 }): React.ReactElement {
   const context = checkRunOverruleContext(checkRun);
   const commitStatus = useCommitStatus(sha, context);
@@ -154,9 +168,11 @@ function EmbargoCheckRun({
         </span>
       )}
       <br />
-      <Link to={checkRun.url} target="_blank" rel="noopener">
-        What is this job?
-      </Link>
+      {configUrl && (
+        <Link to={configUrl} target="_blank" rel="noopener">
+          What is this job?
+        </Link>
+      )}
     </Alert>
   );
 }
