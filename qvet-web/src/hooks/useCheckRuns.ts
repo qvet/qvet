@@ -61,6 +61,16 @@ export const getCheckRunLevel = (
   return configCheckRun ? configCheckRun.level : config.default_level;
 };
 
+export const getCheckRunConfigUrl = (
+  checkRun: CheckRun,
+  config: CheckRunGlobalConfig,
+): string | null => {
+  const configCheckRun = config.items.find(
+    (configCheckRun) => configCheckRun.name === checkRun.name,
+  );
+  return configCheckRun?.url || null;
+};
+
 // filter for check runs that have not returned success on their latest run
 export const filterVisibleCheckRuns = (
   checkRuns: ReadonlyArray<CheckRun>,
