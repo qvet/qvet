@@ -16,6 +16,7 @@ import UserLink from "src/components/UserLink";
 import {
   filterUnresolvedCheckRuns,
   filterVisibleCheckRuns,
+  getMissingCheckRunConfigs,
   useCheckRuns,
   useCheckRunsEmbargo,
 } from "src/hooks/useCheckRuns";
@@ -40,7 +41,7 @@ import {
 } from "src/queries";
 import { Action, RoutineCheck } from "src/utils/config";
 
-import UnresolvedCheckRun from "./UnresolvedCheckRun";
+import { UnresolvedCheckRun, MissingCheckRun } from "./CheckRun";
 
 function useAllQaSuccess(commits: Array<Commit>): boolean {
   const octokit = useOctokit();
@@ -237,8 +238,16 @@ export default function DeploymentHeadline({
   const unresolvedCheckRuns = checkRuns.isSuccess
     ? filterUnresolvedCheckRuns(checkRuns.data)
     : [];
-  const displayableCheckRuns = config.data
+  const displayableUnresolvedCheckRuns = config.data
     ? filterVisibleCheckRuns(unresolvedCheckRuns, config.data.check_runs)
+    : [];
+
+  const missingCheckRunConfigs =
+    checkRuns.isSuccess && config.data
+      ? getMissingCheckRunConfigs(checkRuns.data, config.data?.check_runs)
+      : [];
+  const displayableMissingCheckRunConfigs = config.data
+    ? missingCheckRunConfigs.filter((item) => item.level !== "hidden")
     : [];
 
   const checkRunsEmbargo = useCheckRunsEmbargo(config.data?.check_runs);
@@ -285,7 +294,16 @@ export default function DeploymentHeadline({
   // Then any unsuccessful check runs
   if (config.data) {
     alerts.push(
-      ...displayableCheckRuns.map((checkRun) => (
+      ...displayableMissingCheckRunConfigs.map((checkRunItemConfig, index) => (
+        <MissingCheckRun key={index} checkRunItemConfig={checkRunItemConfig} />
+      )),
+    );
+  }
+
+  // Then any unsuccessful check runs
+  if (config.data) {
+    alerts.push(
+      ...displayableUnresolvedCheckRuns.map((checkRun) => (
         <UnresolvedCheckRun
           key={checkRun.id}
           checkRun={checkRun}
