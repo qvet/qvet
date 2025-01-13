@@ -5,14 +5,18 @@ import useAccessToken from "src/hooks/useAccessToken";
 import useOctokit from "src/hooks/useOctokit";
 import { CheckRun, OwnerRepo } from "src/octokitHelpers";
 import { STATUS_CONTEXT_CHECK_RUN_EMBARGO_PREFIX } from "src/queries";
-import { CheckRunGlobalConfig, CheckRunLevel } from "src/utils/config";
+import {
+  CheckRunGlobalConfig,
+  CheckRunItemConfig,
+  CheckRunLevel,
+} from "src/utils/config";
 
 import useBaseSha from "./useBaseSha";
 import { useCommitStatusList } from "./useCommitStatus";
 import useOwnerRepo from "./useOwnerRepo";
 
-export const checkRunOverruleContext = (check: CheckRun): string =>
-  `${STATUS_CONTEXT_CHECK_RUN_EMBARGO_PREFIX}/${check.name}`;
+export const checkRunOverruleContext = (checkName: string): string =>
+  `${STATUS_CONTEXT_CHECK_RUN_EMBARGO_PREFIX}/${checkName}`;
 
 /**
  * Return all checks runs for base SHA
@@ -59,6 +63,17 @@ export const getCheckRunLevel = (
     (configCheckRun) => configCheckRun.name === checkRun.name,
   );
   return configCheckRun ? configCheckRun.level : config.default_level;
+};
+
+// filter for missing check runs that are defined in config but not returned by api
+export const getMissingCheckRunConfigs = (
+  checkRuns: ReadonlyArray<CheckRun>,
+  config: CheckRunGlobalConfig,
+): ReadonlyArray<CheckRunItemConfig> => {
+  return config.items.filter(
+    (checkRunItemConfig) =>
+      !checkRuns.find((checkRun) => checkRun.name === checkRunItemConfig.name),
+  );
 };
 
 export const getCheckRunConfigUrl = (
@@ -147,11 +162,25 @@ export const useCheckRunsEmbargo = (config?: CheckRunGlobalConfig): boolean => {
     return false;
   }
 
-  const embargoCheckRunContexts = new Set(
-    filterUnresolvedCheckRuns(checkRuns.data)
-      .filter((checkRun) => getCheckRunLevel(checkRun, config) === "embargo")
-      .map(checkRunOverruleContext),
-  );
+  const missingCheckRunEmbargoContexts = getMissingCheckRunConfigs(
+    checkRuns.data,
+    config,
+  )
+    .filter((checkRunItemConfig) => checkRunItemConfig.level === "embargo")
+    .map((checkRun) => checkRun.name)
+    .map(checkRunOverruleContext);
+
+  const unresolvedCheckRunEmbargoContexts = filterUnresolvedCheckRuns(
+    checkRuns.data,
+  )
+    .filter((checkRun) => getCheckRunLevel(checkRun, config) === "embargo")
+    .map((checkRun) => checkRun.name)
+    .map(checkRunOverruleContext);
+
+  const embargoCheckRunContexts = new Set([
+    ...missingCheckRunEmbargoContexts,
+    ...unresolvedCheckRunEmbargoContexts,
+  ]);
   for (const context of embargoCheckRunContexts) {
     const commitStatus = commitStatusList.data.find(
       // first commit status is the latest
