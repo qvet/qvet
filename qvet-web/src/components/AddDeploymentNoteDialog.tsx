@@ -11,7 +11,10 @@ import { useCallback, useRef, useState } from "react";
 
 import useSetCommitState from "src/hooks/useSetCommitState";
 import { STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX } from "src/queries";
-import { randomHexId } from "src/utils/helpers";
+import {
+  randomHexId,
+  validateCommitStatusDescription,
+} from "src/utils/helpers";
 
 export interface AddDeploymentNoteDialogProps {
   sha: string;
@@ -57,7 +60,10 @@ export default function AddDeploymentNoteDialog(
 
   const changeMessage = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setMessage(event.target.value);
+      const value = event.target.value;
+      if (validateCommitStatusDescription(value)) {
+        setMessage(event.target.value);
+      }
     },
     [],
   );
