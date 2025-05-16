@@ -1,5 +1,7 @@
 import { useQuery, useQueries, UseQueryResult } from "@tanstack/react-query";
 import { Octokit } from "octokit";
+import * as React from "react";
+import { useQueryParam, NumberParam } from "use-query-params";
 
 import useLogin from "src/hooks/useLogin";
 import useOctokit from "src/hooks/useOctokit";
@@ -32,8 +34,23 @@ export function useRepos(): {
   visibleRepos: UseQueryResult<Array<Repository>>;
   setSelectedRepo: (id: number) => void;
 } {
-  const selectedRepo = useStore((store) => store.repoId);
-  const setSelectedRepo = useStore((store) => store.setRepoId);
+  const [repoIdUrl, setRepoIdUrl] = useQueryParam(`repoId`, NumberParam);
+
+  // Fallback to url if we don't have state in the store - should be identical
+  const selectedRepo = useStore((store) => store.repoId) ?? repoIdUrl ?? null;
+  const setRepoIdStore = useStore((store) => store.setRepoId);
+  const setRepoId = React.useCallback(
+    (id: number) => {
+      setRepoIdStore(id);
+      if (id) {
+        setRepoIdUrl(id);
+      } else {
+        // Do not set query param if no repo selected
+        setRepoIdUrl(undefined);
+      }
+    },
+    [setRepoIdStore, setRepoIdUrl],
+  );
   const visibleRepos = useVisibleRepos();
   const currentRepo = useQuery({
     queryKey: [
@@ -49,7 +66,7 @@ export function useRepos(): {
   return {
     currentRepo,
     visibleRepos,
-    setSelectedRepo,
+    setSelectedRepo: setRepoId,
   };
 }
 
