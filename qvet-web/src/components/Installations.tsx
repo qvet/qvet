@@ -12,7 +12,7 @@ import { useRepo } from "src/hooks/useOwnerRepo";
 export default function Installations(): React.ReactElement {
   const repo = useRepo();
 
-  return repo.isError ? (
+  const content = repo.isError ? (
     <Paper elevation={3}>
       <Box padding={2}>
         <Alert severity="error">Error loading repositories</Alert>
@@ -24,19 +24,23 @@ export default function Installations(): React.ReactElement {
     <Paper elevation={3}>
       <Box padding={2}>
         <Alert severity="info">
-          <AlertTitle>No repositories found</AlertTitle>
+          <AlertTitle>Repository not found</AlertTitle>
           You need to install the{" "}
           <Link target="_blank" to="https://github.com/apps/qvet">
             qvet GitHub App
           </Link>{" "}
-          on a repository before it is listed here.
+          on a repository before it is listed above.
         </Alert>
       </Box>
     </Paper>
   ) : (
+    <Comparison repo={repo.data} />
+  );
+
+  return (
     <>
       <RepoSelect />
-      <Comparison repo={repo.data} />
+      {content}
     </>
   );
 }

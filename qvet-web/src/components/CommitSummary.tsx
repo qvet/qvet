@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import Fuse from "fuse.js";
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useQueryParam, StringParam } from "use-query-params";
 
 import AddDeploymentNoteDialog from "src/components/AddDeploymentNoteDialog";
 import AddEmbargoDialog from "src/components/AddEmbargoDialog";
@@ -33,7 +34,20 @@ export default function CommitSummary({
   repo,
 }: CommitSummaryProps): React.ReactElement {
   const [expand, setExpand] = useState<boolean>(false);
-  const [search, setSearch] = useState<string>("");
+  const [searchUrl, setSearchUrl] = useQueryParam(`q`, StringParam);
+  const [search, setSearchStore] = useState<string>(searchUrl ?? "");
+  const setSearch = useCallback(
+    (value: string) => {
+      setSearchStore(value);
+      if (value) {
+        setSearchUrl(value);
+      } else {
+        // Do not set query param if search string empty
+        setSearchUrl(undefined);
+      }
+    },
+    [setSearchStore, setSearchUrl],
+  );
 
   const authorLogins = config.commit.ignore.authors;
   const merges = config.commit.ignore.merges;
@@ -219,7 +233,7 @@ const CommitFiltering = ({
   setSearch,
 }: {
   readonly search: string;
-  readonly setSearch: React.Dispatch<React.SetStateAction<string>>;
+  readonly setSearch: (value: string) => void;
 }) => {
   const loginData = useLogin();
 
