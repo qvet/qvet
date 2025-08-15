@@ -31,13 +31,15 @@ interface Tag {
   };
 }
 
-const MAX_TAG_PAGES_TO_LOAD = 10;
+const DEFAULT_MAX_TAG_PAGES_TO_LOAD = 20;
 
 async function getProdTag(
   octokit: Octokit,
   ownerRepo: OwnerRepo,
   config: Config,
 ): Promise<Tag | null> {
+  const maxPages: number =
+    config.release.max_pages_to_load ?? DEFAULT_MAX_TAG_PAGES_TO_LOAD;
   const tagPages = octokit.paginate.iterator(
     octokit.rest.repos.listTags as any,
     {
@@ -63,7 +65,7 @@ async function getProdTag(
 
     // FIXME better pagination/finding of prod tag
     page_index += 1;
-    if (page_index >= MAX_TAG_PAGES_TO_LOAD) {
+    if (page_index >= maxPages) {
       break;
     }
   }
