@@ -79,6 +79,7 @@ const SCHEMA_RELEASE = {
       items: SCHEMA_COMMIT_IDENTIFIER,
       maxItems: 4,
     },
+    max_pages_to_load: { type: "integer" },
   },
   required: [],
   additionalProperties: false,
@@ -167,6 +168,7 @@ export interface Config {
   };
   release: {
     identifiers: Array<Identifier>;
+    max_pages_to_load: number | null;
   };
   team: Team | null;
   routine_checks: Array<RoutineCheck>;
@@ -246,6 +248,7 @@ function standardiseConfig(raw: any): Config {
           pattern: "^v",
         },
       ],
+      max_pages_to_load: raw.release?.max_pages_to_load ?? null,
     },
     team: raw.team ?? null,
     routine_checks: raw.routine_checks ?? [],
