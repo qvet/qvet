@@ -232,7 +232,7 @@ export default function DeploymentHeadline({
     : null;
 
   const config = useConfig();
-  const action = !!config.data && config.data.action.ready;
+  const actions = config.data?.action.ready ?? [];
 
   const checkRuns = useCheckRuns(config.data?.check_runs.enabled || false);
   const unresolvedCheckRuns = checkRuns.isSuccess
@@ -318,7 +318,15 @@ export default function DeploymentHeadline({
       <Alert
         key="ready-to-deploy"
         severity="success"
-        action={action ? <ReadyAction action={action} /> : null}>
+        action={
+          actions.length > 0 ? (
+            <Stack direction="row" spacing={1}>
+              {actions.map((action: Action) => (
+                <ReadyAction key={action.name} action={action} />
+              ))}
+            </Stack>
+          ) : null
+        }>
         Ready to Deploy
         <DeploymentUsers commits={commits} />
       </Alert>,
