@@ -51,7 +51,17 @@ const SCHEMA_ACTION = {
 const SCHEMA_ACTION_LOOKUP = {
   type: "object",
   properties: {
-    ready: SCHEMA_ACTION,
+    ready: {
+      oneOf: [
+        SCHEMA_ACTION, // Single action (backward compatible)
+        {
+          type: "array",
+          items: SCHEMA_ACTION,
+          minItems: 1,
+          maxItems: 5, // Reasonable UI limit
+        },
+      ],
+    },
   },
   required: [],
   additionalProperties: false,
@@ -157,7 +167,7 @@ const SCHEMA = {
 
 export interface Config {
   action: {
-    ready: Action | null;
+    ready: Array<Action>;
   };
   commit: {
     ignore: {
@@ -232,7 +242,11 @@ export function parseConfigFile(configFile: string): ParseConfigFileResult {
 function standardiseConfig(raw: any): Config {
   return {
     action: {
-      ready: raw.action?.ready ?? null,
+      ready: Array.isArray(raw.action?.ready)
+        ? raw.action.ready
+        : raw.action?.ready
+        ? [raw.action.ready]
+        : [],
     },
     commit: {
       ignore: {
