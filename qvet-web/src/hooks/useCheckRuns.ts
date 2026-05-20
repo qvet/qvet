@@ -48,11 +48,16 @@ async function getCheckRuns(
   baseSha: string,
   ownerRepo: OwnerRepo,
 ): Promise<Array<CheckRun>> {
-  const response = await octokit.rest.checks.listForRef({
-    ...ownerRepo,
-    ref: baseSha,
-  });
-  return response.data.check_runs;
+  // Load all check runs for a commit at once
+  return octokit.paginate(
+    "GET /repos/{owner}/{repo}/commits/{ref}/check-runs",
+    {
+      ...ownerRepo,
+      ref: baseSha,
+      // Return maximum possible per page, so fewest pages
+      per_page: 100,
+    },
+  );
 }
 
 export const getCheckRunLevel = (
