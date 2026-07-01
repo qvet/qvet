@@ -65,4 +65,4 @@ jobs:
           context: .
           file: qvet-standalone/Dockerfile
           push: true
-          tags: tommilligan/qvet:latest
+          tags: "tommilligan/qvet:latest,tommilligan/qvet:v1,tommilligan/qvet:git-sha-${{ github.sha }}"
