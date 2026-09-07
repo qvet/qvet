@@ -37,6 +37,40 @@ All data is stored in Github, there is no additional persistent store/database r
 - Status
   - To listen for QA statuses being updated
 
+## Configuration
+
+`qvet` reads a `qvet.yml` file from the root of the default branch of the
+selected repository. See this repository's own [`qvet.yml`](./qvet.yml) for a
+minimal example.
+
+### Scheduled notices
+
+Notices are banners shown at the top of the dashboard only while their schedule
+is active. They are informational and do not affect whether a release is ready
+to deploy. Use them for anything reviewers should be reminded of during a
+recurring period, such as a release freeze or a period when extra care is
+needed when signing off.
+
+```yaml
+notices:
+  - title: "Release freeze"
+    text: "Only changes that are safe to roll back should be released this week."
+    url: "https://example.com/release-freeze-policy"
+    severity: warning # info | warning | error (default: warning)
+    schedule:
+      start: "2030-03-04T09:00:00Z" # first time the notice becomes active
+      duration: "P5D" # how long it stays active each time
+      repeat_every: "P4W" # optional, omit for a one-off notice
+      until: "2031-01-01T00:00:00Z" # optional, never active from this instant
+```
+
+- `start` and `until` are ISO 8601 timestamps and must include a timezone.
+- `duration` and `repeat_every` are ISO 8601 durations, restricted to weeks,
+  days, hours and minutes (for example `P2W`, `P3D`, `PT12H`, `P1DT6H`).
+  Months and years are not supported as they have no fixed length.
+- Schedules are evaluated in absolute time, so daylight savings changes do not
+  shift when a notice is shown.
+
 ## Development
 
 Start the two services in development/hot reload mode. Respectively:
@@ -44,7 +78,7 @@ Start the two services in development/hot reload mode. Respectively:
 - `web` with `cd qvet-web && npm install && npm run dev`
 - `api` with `cd qvet-api && cargo watch -x 'run -- --bind 0.0.0.0:3000'`
 
-*NOTE*
+_NOTE_
 
 You'll need to make sure that `http://localhost` is mapped to an IPv4 address.
 If it isn't, then the webapp won't be able to resolve the API correctly.
