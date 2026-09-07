@@ -2,6 +2,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
@@ -28,6 +29,7 @@ import {
 } from "src/hooks/useCommitStatus";
 import useConfig from "src/hooks/useConfig";
 import useLogin from "src/hooks/useLogin";
+import useNow from "src/hooks/useNow";
 import useOctokit from "src/hooks/useOctokit";
 import useOwnerRepo from "src/hooks/useOwnerRepo";
 import useRoutineChecksComplete from "src/hooks/useRoutineChecksComplete";
@@ -39,7 +41,8 @@ import {
   STATUS_CONTEXT_DEPLOYMENT_NOTE_PREFIX,
   STATUS_CONTEXT_EMBARGO_PREFIX,
 } from "src/queries";
-import { Action, RoutineCheck } from "src/utils/config";
+import { Action, Notice, RoutineCheck } from "src/utils/config";
+import { activeNotices } from "src/utils/notices";
 
 import { UnresolvedCheckRun, MissingCheckRun } from "./CheckRun";
 
@@ -102,6 +105,22 @@ function EmbargoRow({ sha, status, id }: EmbargoRowProps) {
         )}
         <RelativeTime timestamp={status.created_at} />
       </Typography>
+    </Alert>
+  );
+}
+
+function NoticeRow({ notice }: { notice: Notice }) {
+  return (
+    <Alert severity={notice.severity}>
+      {notice.title ? <AlertTitle>{notice.title}</AlertTitle> : null}
+      <Typography>{notice.text}</Typography>
+      {notice.url ? (
+        <Typography variant="caption">
+          <Link href={notice.url} target="_blank" rel="noopener noreferrer">
+            More details.
+          </Link>
+        </Typography>
+      ) : null}
     </Alert>
   );
 }
@@ -234,6 +253,9 @@ export default function DeploymentHeadline({
   const config = useConfig();
   const actions = config.data?.action.ready ?? [];
 
+  const now = useNow();
+  const notices = activeNotices(config.data?.notices ?? [], now);
+
   const checkRuns = useCheckRuns(config.data?.check_runs.enabled || false);
   const unresolvedCheckRuns = checkRuns.isSuccess
     ? filterUnresolvedCheckRuns(checkRuns.data)
@@ -259,7 +281,14 @@ export default function DeploymentHeadline({
     noEmbargos && allQaSuccess && commits.length > 0 && routineChecksComplete;
 
   const alerts = [];
-  // Add any embargoes first
+  // Scheduled notices first, they are informational and independent of state
+  alerts.push(
+    ...notices.map((notice, index) => (
+      <NoticeRow key={`notice-${index}`} notice={notice} />
+    )),
+  );
+
+  // Then any embargoes
   alerts.push(
     ...(embargoList || []).map((embargo) => (
       <EmbargoRow

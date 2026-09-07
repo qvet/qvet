@@ -151,6 +151,57 @@ const SCHEMA_EXTERNAL_CHECKS = {
   additionalProperties: false,
 };
 
+// ISO 8601 timestamp with an explicit timezone, e.g. 2030-01-01T00:00:00Z
+const SCHEMA_TIMESTAMP = {
+  type: "string",
+  pattern:
+    "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})$",
+  maxLength: 40,
+};
+
+// ISO 8601 duration, restricted to weeks/days/hours/minutes, e.g. P1DT12H
+const SCHEMA_DURATION = {
+  type: "string",
+  pattern: "^P(\\d+W)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?)?$",
+  maxLength: 32,
+};
+
+const SCHEMA_NOTICE_SCHEDULE = {
+  type: "object",
+  properties: {
+    start: SCHEMA_TIMESTAMP,
+    duration: SCHEMA_DURATION,
+    repeat_every: SCHEMA_DURATION,
+    until: SCHEMA_TIMESTAMP,
+  },
+  required: ["start", "duration"],
+  additionalProperties: false,
+};
+
+const SCHEMA_NOTICE_SEVERITY = {
+  type: "string",
+  enum: ["info", "warning", "error"],
+};
+
+const SCHEMA_NOTICE = {
+  type: "object",
+  properties: {
+    title: { type: "string", maxLength: 128 },
+    text: { type: "string", maxLength: 512 },
+    url: { type: "string", maxLength: 256 },
+    severity: SCHEMA_NOTICE_SEVERITY,
+    schedule: SCHEMA_NOTICE_SCHEDULE,
+  },
+  required: ["text", "schedule"],
+  additionalProperties: false,
+};
+
+const SCHEMA_NOTICES = {
+  type: "array",
+  items: SCHEMA_NOTICE,
+  maxItems: 16,
+};
+
 const SCHEMA = {
   type: "object",
   properties: {
@@ -160,6 +211,7 @@ const SCHEMA = {
     team: SCHEMA_TEAM,
     routine_checks: SCHEMA_ROUTINE_CHECKS,
     check_runs: SCHEMA_EXTERNAL_CHECKS,
+    notices: SCHEMA_NOTICES,
   },
   required: [],
   additionalProperties: false,
@@ -183,6 +235,7 @@ export interface Config {
   team: Team | null;
   routine_checks: Array<RoutineCheck>;
   check_runs: CheckRunGlobalConfig;
+  notices: Array<Notice>;
 }
 
 export interface ActionLink {
@@ -221,6 +274,27 @@ export interface CheckRunGlobalConfig {
   enabled: true;
   default_level: CheckRunLevel;
   items: Array<CheckRunItemConfig>;
+}
+
+export type NoticeSeverity = "info" | "warning" | "error";
+
+export interface NoticeSchedule {
+  /** When the notice first becomes active (ISO 8601 timestamp). */
+  start: string;
+  /** How long the notice stays active from each start (ISO 8601 duration). */
+  duration: string;
+  /** If set, the notice becomes active again at this interval. */
+  repeat_every?: string;
+  /** If set, the notice is never active at or after this instant. */
+  until?: string;
+}
+
+export interface Notice {
+  title?: string;
+  text: string;
+  url?: string;
+  severity: NoticeSeverity;
+  schedule: NoticeSchedule;
 }
 
 export interface ParseConfigFileResult {
@@ -271,5 +345,11 @@ function standardiseConfig(raw: any): Config {
       default_level: "hidden",
       items: [],
     },
+    notices: (raw.notices ?? []).map(
+      (notice: any): Notice => ({
+        ...notice,
+        severity: notice.severity ?? "warning",
+      }),
+    ),
   };
 }
