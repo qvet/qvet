@@ -86,9 +86,15 @@ async function getCommitComparison(
   baseSha: string,
   prodSha: string,
 ): Promise<CommitComparison> {
-  const comparison = await octokit.request(
+  // Unpaginated, compare returns only the newest 250 commits.
+  // Pages come back oldest first, so concatenating them keeps the order.
+  const pages: Array<CommitComparison> = [];
+  for await (const { data } of octokit.paginate.iterator(
     "GET /repos/{owner}/{repo}/compare/{basehead}",
-    { ...ownerRepo, basehead: `${prodSha}...${baseSha}` },
-  );
-  return comparison.data;
+    { ...ownerRepo, basehead: `${prodSha}...${baseSha}`, per_page: 100 },
+  )) {
+    // octokit types every page as a list, but compare pages are whole comparisons.
+    pages.push(data as unknown as CommitComparison);
+  }
+  return { ...pages[0], commits: pages.flatMap((page) => page.commits) };
 }
