@@ -55,7 +55,10 @@ export default function Comparison({
           {prodTag.data === null ? (
             <Alert severity="info">No previous prod release</Alert>
           ) : comparison.isError || config.isError ? (
-            <Alert severity="error">Error loading comparison</Alert>
+            <Alert severity="error">
+              Error loading comparison:{" "}
+              {errorMessage(comparison.error ?? config.error)}
+            </Alert>
           ) : comparison.isLoading || config.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (
@@ -96,5 +99,16 @@ async function getCommitComparison(
     // octokit types every page as a list, but compare pages are whole comparisons.
     pages.push(data as unknown as CommitComparison);
   }
-  return { ...pages[0], commits: pages.flatMap((page) => page.commits) };
+  const commits = pages.flatMap((page) => page.commits);
+  // octokit turns a 409 into an empty page instead of throwing.
+  if (commits.length !== pages[0].total_commits) {
+    throw new Error(
+      `Loaded ${commits.length} of ${pages[0].total_commits} commits in the comparison`,
+    );
+  }
+  return { ...pages[0], commits };
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
