@@ -55,7 +55,10 @@ export default function Comparison({
           {prodTag.data === null ? (
             <Alert severity="info">No previous prod release</Alert>
           ) : comparison.isError || config.isError ? (
-            <Alert severity="error">Error loading comparison</Alert>
+            <Alert severity="error">
+              Error loading comparison:{" "}
+              {errorMessage(comparison.error ?? config.error)}
+            </Alert>
           ) : comparison.isLoading || config.isLoading ? (
             <Stack spacing={1}>
               {Array.from(Array(4)).map((_value, index) => (
@@ -86,9 +89,26 @@ async function getCommitComparison(
   baseSha: string,
   prodSha: string,
 ): Promise<CommitComparison> {
-  const comparison = await octokit.request(
+  // Unpaginated, compare returns only the newest 250 commits.
+  // Pages come back oldest first, so concatenating them keeps the order.
+  const pages: Array<CommitComparison> = [];
+  for await (const { data } of octokit.paginate.iterator(
     "GET /repos/{owner}/{repo}/compare/{basehead}",
-    { ...ownerRepo, basehead: `${prodSha}...${baseSha}` },
-  );
-  return comparison.data;
+    { ...ownerRepo, basehead: `${prodSha}...${baseSha}`, per_page: 100 },
+  )) {
+    // octokit types every page as a list, but compare pages are whole comparisons.
+    pages.push(data as unknown as CommitComparison);
+  }
+  const commits = pages.flatMap((page) => page.commits);
+  // octokit turns a 409 into an empty page instead of throwing.
+  if (commits.length !== pages[0].total_commits) {
+    throw new Error(
+      `Loaded ${commits.length} of ${pages[0].total_commits} commits in the comparison`,
+    );
+  }
+  return { ...pages[0], commits };
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
