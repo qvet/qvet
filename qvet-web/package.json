@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "harness": "vite --config harness/vite.config.ts",
     "build": "tsc && vite build",
     "fix": "npm run fix:prettier && npm run fix:eslint",
     "fix:eslint": "npm run lint:eslint --fix",
     "fix:prettier": "prettier --write .",
     "lint": "npm run lint:eslint && npm run lint:prettier",
-    "lint:eslint": "eslint src --cache --cache-location ./node_modules/.cache/eslint --ext .js,.ts,.tsx",
+    "lint:eslint": "eslint src harness --cache --cache-location ./node_modules/.cache/eslint --ext .js,.ts,.tsx",
     "lint:prettier": "prettier --check .",
     "preview": "vite preview"
   },

@@ -7,7 +7,7 @@ import Skeleton from "@mui/material/Skeleton";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import { grey } from "@mui/material/colors";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 
 import DisplayState from "src/components/DisplayState";
 import ShaLink from "src/components/ShaLink";
@@ -17,7 +17,7 @@ import useSetCommitState from "src/hooks/useSetCommitState";
 import { Commit } from "src/octokitHelpers";
 import { STATUS_CONTEXT_QA } from "src/queries";
 
-export default function CommitRow({
+export default memo(function CommitRow({
   commit,
 }: {
   commit: Commit;
@@ -91,7 +91,7 @@ export default function CommitRow({
       </TableCell>
     </TableRow>
   );
-}
+});
 
 function DisplayStateSkeleton({ ...rest }) {
   return (

@@ -1,7 +1,9 @@
 import ClearIcon from "@mui/icons-material/Clear";
 import { IconButton, TextField, Tooltip } from "@mui/material";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import Collapse from "@mui/material/Collapse";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -17,7 +19,7 @@ import ConfigStatus from "src/components/ConfigStatus";
 import DeploymentHeadline from "src/components/DeploymentHeadline";
 import useLogin from "src/hooks/useLogin";
 import { Commit, CommitComparison, Repository } from "src/octokitHelpers";
-import { Config } from "src/utils/config";
+import { Config, isDeveloperCommit } from "src/utils/config";
 
 import RoutineChecks from "./RoutineChecks";
 import UserAvatar from "./UserAvatar";
@@ -56,18 +58,8 @@ export default function CommitSummary({
     : repo.default_branch;
   const developerCommits = useMemo(
     () =>
-      comparison.commits.filter((commit) => {
-        // Is a merge (and we don't want merges)
-        if (merges && commit.parents.length > 1) {
-          return false;
-        }
-
-        // Author is in the ignore list
-        return !authorLogins.some(
-          (ignoredLogin) => ignoredLogin === commit.author?.login,
-        );
-      }),
-    [authorLogins, comparison, merges],
+      comparison.commits.filter((commit) => isDeveloperCommit(commit, config)),
+    [comparison, config],
   );
   const ignoredCommitCount =
     comparison.commits.length - developerCommits.length;
@@ -101,13 +93,25 @@ export default function CommitSummary({
   // Reverse the commits to get the latest on top
   visibleCommits.reverse();
 
-  const deploymentHeadline = (
-    <DeploymentHeadline
-      commits={developerCommits}
-      routineChecks={config.routine_checks}
-      baseSha={comparison.base_commit.sha}
-    />
-  );
+  const loadedCount = comparison.commits.length;
+  const totalCount = comparison.total_commits;
+  // A partial list could report a release as fully QA'd before it is.
+  const deploymentHeadline =
+    loadedCount < totalCount ? (
+      <Alert
+        severity="info"
+        icon={<CircularProgress size={20} />}
+        sx={{ marginBottom: 1 }}>
+        Still loading commits ({loadedCount} of {totalCount}). Some may be
+        missing below, and deployment status will show once all have loaded.
+      </Alert>
+    ) : (
+      <DeploymentHeadline
+        commits={developerCommits}
+        routineChecks={config.routine_checks}
+        baseSha={comparison.base_commit.sha}
+      />
+    );
   const configStatus = <ConfigStatus />;
 
   return (
