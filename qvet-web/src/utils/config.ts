@@ -1,6 +1,8 @@
 import Ajv from "ajv";
 import YAML from "yaml";
 
+import { Commit } from "src/octokitHelpers";
+
 const ajv = new Ajv({
   strict: true,
   allErrors: true,
@@ -352,4 +354,12 @@ function standardiseConfig(raw: any): Config {
       }),
     ),
   };
+}
+
+export function isDeveloperCommit(commit: Commit, config: Config): boolean {
+  const { authors, merges } = config.commit.ignore;
+  if (merges && commit.parents.length > 1) {
+    return false;
+  }
+  return !authors.some((ignoredLogin) => ignoredLogin === commit.author?.login);
 }
