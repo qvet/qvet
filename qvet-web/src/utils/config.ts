@@ -185,6 +185,11 @@ const SCHEMA_NOTICE_SEVERITY = {
   enum: ["info", "warning", "error"],
 };
 
+const SCHEMA_NOTICE_LEVEL = {
+  type: "string",
+  enum: ["info", "embargo"],
+};
+
 const SCHEMA_NOTICE = {
   type: "object",
   properties: {
@@ -192,6 +197,7 @@ const SCHEMA_NOTICE = {
     text: { type: "string", maxLength: 512 },
     url: { type: "string", maxLength: 256 },
     severity: SCHEMA_NOTICE_SEVERITY,
+    level: SCHEMA_NOTICE_LEVEL,
     schedule: SCHEMA_NOTICE_SCHEDULE,
   },
   required: ["text", "schedule"],
@@ -280,6 +286,15 @@ export interface CheckRunGlobalConfig {
 
 export type NoticeSeverity = "info" | "warning" | "error";
 
+/**
+ * What an active notice does to the release.
+ *
+ * - `info`: shown as a banner only.
+ * - `embargo`: also holds the release, like a failing `embargo` check run,
+ *   so the "Ready to Deploy" alert and its actions are not shown.
+ */
+export type NoticeLevel = "info" | "embargo";
+
 export interface NoticeSchedule {
   /** When the notice first becomes active (ISO 8601 timestamp). */
   start: string;
@@ -296,6 +311,7 @@ export interface Notice {
   text: string;
   url?: string;
   severity: NoticeSeverity;
+  level: NoticeLevel;
   schedule: NoticeSchedule;
 }
 
@@ -351,6 +367,7 @@ function standardiseConfig(raw: any): Config {
       (notice: any): Notice => ({
         ...notice,
         severity: notice.severity ?? "warning",
+        level: notice.level ?? "info",
       }),
     ),
   };

@@ -46,10 +46,16 @@ minimal example.
 ### Scheduled notices
 
 Notices are banners shown at the top of the dashboard only while their schedule
-is active. They are informational and do not affect whether a release is ready
-to deploy. Use them for anything reviewers should be reminded of during a
-recurring period, such as a release freeze or a period when extra care is
-needed when signing off.
+is active. By default they are informational and do not affect whether a
+release is ready to deploy. Use them for anything reviewers should be reminded
+of during a recurring period, such as a release freeze or a period when extra
+care is needed when signing off.
+
+A notice with `level: embargo` also holds the release while it is active, in
+the same way as a failing `embargo` check run: the "Ready to Deploy" alert and
+its actions are not shown. Use it for an enforced freeze. There is no way to
+override it from the dashboard; anyone with an approved exception deploys
+through the pipeline directly.
 
 ```yaml
 notices:
@@ -57,6 +63,7 @@ notices:
     text: "Only changes that are safe to roll back should be released this week."
     url: "https://example.com/release-freeze-policy"
     severity: warning # info | warning | error (default: warning)
+    level: info # info | embargo (default: info)
     schedule:
       start: "2030-03-04T09:00:00Z" # first time the notice becomes active
       duration: "P5D" # how long it stays active each time

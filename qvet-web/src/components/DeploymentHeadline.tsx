@@ -114,6 +114,11 @@ function NoticeRow({ notice }: { notice: Notice }) {
     <Alert severity={notice.severity}>
       {notice.title ? <AlertTitle>{notice.title}</AlertTitle> : null}
       <Typography>{notice.text}</Typography>
+      {notice.level === "embargo" ? (
+        <Typography variant="caption" component="p">
+          Embargo in place: deployment is on hold while this notice is active.
+        </Typography>
+      ) : null}
       {notice.url ? (
         <Typography variant="caption">
           <Link href={notice.url} target="_blank" rel="noopener noreferrer">
@@ -273,15 +278,20 @@ export default function DeploymentHeadline({
     : [];
 
   const checkRunsEmbargo = useCheckRunsEmbargo(config.data?.check_runs);
+  const noticeEmbargo = notices.some((notice) => notice.level === "embargo");
   const noEmbargos =
-    embargoList !== null && embargoList.length === 0 && !checkRunsEmbargo;
+    embargoList !== null &&
+    embargoList.length === 0 &&
+    !checkRunsEmbargo &&
+    !noticeEmbargo;
   const allQaSuccess = useAllQaSuccess(commits);
 
   const readyToDeploy =
     noEmbargos && allQaSuccess && commits.length > 0 && routineChecksComplete;
 
   const alerts = [];
-  // Scheduled notices first, they are informational and independent of state
+  // Scheduled notices first. They depend only on the clock, not on the
+  // release state; an `embargo` notice also holds the release above.
   alerts.push(
     ...notices.map((notice, index) => (
       <NoticeRow key={`notice-${index}`} notice={notice} />
